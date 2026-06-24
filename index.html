@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BigHero PS — Galaxy Control</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7C3AED">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BigHero PS">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg-root:   #0A0A1A;
+    --bg-card:   #0F0F2E;
+    --bg-head:   #050510;
+    --bg-side:   #07071A;
+    --nebula:    #7C3AED;
+    --nebula2:   #9D4EDD;
+    --star-blue: #3B82F6;
+    --cyan:      #06B6D4;
+    --nova:      #F472B6;
+    --pulsar:    #818CF8;
+    --aurora:    #34D399;
+    --solar:     #FBBF24;
+    --comet:     #FB923C;
+    --white:     #FFFFFF;
+    --star-w:    #E2E8FF;
+    --dark:      #E8EEFF;
+    --dark2:     #C4CAFF;
+    --card-bdr:  #1E1E4A;
+    --card-bdr2: #2A2A5A;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; width:100%; overflow-x:hidden; }
+
+  body {
+    background: var(--bg-root);
+    color: var(--dark);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* Animated starfield BG */
+  body::before {
+    content:'';
+    position: fixed; inset:0;
+    background-image:
+      radial-gradient(1px 1px at 10% 15%, rgba(130,130,255,0.6) 0%, transparent 0%),
+      radial-gradient(1px 1px at 25% 60%, rgba(255,255,255,0.5) 0%, transparent 0%),
+      radial-gradient(1px 1px at 40% 30%, rgba(200,180,255,0.5) 0%, transparent 0%),
+      radial-gradient(1px 1px at 55% 80%, rgba(130,200,255,0.6) 0%, transparent 0%),
+      radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,0.4) 0%, transparent 0%),
+      radial-gradient(1px 1px at 85% 55%, rgba(150,150,255,0.5) 0%, transparent 0%),
+      radial-gradient(1px 1px at 15% 85%, rgba(255,255,255,0.4) 0%, transparent 0%),
+      radial-gradient(1px 1px at 90% 40%, rgba(200,200,255,0.5) 0%, transparent 0%),
+      radial-gradient(2px 2px at 33% 45%, rgba(120,100,255,0.4) 0%, transparent 0%),
+      radial-gradient(2px 2px at 67% 70%, rgba(100,200,255,0.4) 0%, transparent 0%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top:0; z-index:100;
+    background: rgba(5,5,16,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(124,58,237,0.4);
+    padding: 7px 14px 6px;
+    display: flex; align-items:center; justify-content:space-between;
+  }
+  .topbar-brand {
+    display:flex; align-items:center; gap:8px;
+  }
+  .topbar-logo {
+    width:34px; height:34px; border-radius:50%;
+    background: radial-gradient(circle at 40% 35%, #1a1a4a, #050510);
+    border: 2px solid var(--nebula2);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif; font-size:10px; font-weight:900;
+    color:var(--nebula2); letter-spacing:1px;
+    box-shadow: 0 0 16px rgba(157,78,221,0.4);
+    animation: logoPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%,100%{box-shadow:0 0 12px rgba(157,78,221,0.4);}
+    50%{box-shadow:0 0 24px rgba(157,78,221,0.8), 0 0 40px rgba(157,78,221,0.3);}
+  }
+  .brand-text { line-height:1.1; }
+  .brand-text .b1 { font-family:'Orbitron',sans-serif; font-size:13px; font-weight:900; color:var(--nebula2); letter-spacing:1px; }
+  .brand-text .b2 { font-size:9px; color:var(--pulsar); letter-spacing:3px; }
+  .topbar-right { display:flex; align-items:center; gap:10px; }
+  .fb-badge {
+    display:flex; align-items:center; gap:5px;
+    background: rgba(15,15,46,0.8);
+    border: 1px solid var(--card-bdr);
+    border-radius:20px; padding:4px 10px;
+    font-size:10px; font-weight:700; letter-spacing:1px;
+  }
+  .fb-dot { width:7px; height:7px; border-radius:50%; background:#333355; transition:all 0.5s; }
+  .fb-dot.on { background:var(--aurora); box-shadow:0 0 8px var(--aurora); animation:dotBlink 1.5s infinite; }
+  .fb-dot.err { background:var(--nova); }
+  @keyframes dotBlink { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  .clock-badge {
+    font-family:'Share Tech Mono',monospace;
+    font-size:13px; color:var(--white);
+    background: rgba(15,15,46,0.8);
+    border: 1px solid var(--card-bdr);
+    border-radius:6px; padding:4px 9px;
+    letter-spacing:1px;
+  }
+
+  /* ── STAT BAR ── */
+  .stat-bar {
+    background: rgba(7,7,26,0.95);
+    border-bottom: 1px solid rgba(30,30,74,0.8);
+    padding: 5px 10px;
+    display:flex; gap:6px; overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .stat-bar::-webkit-scrollbar { display:none; }
+  .stat-item {
+    flex:0 0 auto;
+    background: rgba(15,15,46,0.9);
+    border:1px solid var(--card-bdr);
+    border-radius:8px;
+    padding:4px 10px; text-align:center; min-width:74px;
+  }
+  .stat-label { font-size:7px; color:var(--dark2); letter-spacing:1px; display:block; }
+  .stat-value { font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700; display:block; margin-top:1px; }
+  .stat-value.green  { color:var(--aurora); }
+  .stat-value.yellow { color:var(--solar); }
+  .stat-value.purple { color:var(--nebula2); }
+  .stat-value.cyan   { color:var(--cyan); }
+
+  /* ── TABS ── */
+  .tabs {
+    background: rgba(5,5,16,0.95);
+    border-bottom: 1px solid var(--card-bdr);
+    display:flex; overflow-x:auto; scrollbar-width:none;
+    padding: 0 8px;
+  }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab-btn {
+    flex:0 0 auto;
+    padding:7px 14px;
+    font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700;
+    color:var(--dark2); background:none; border:none;
+    border-bottom:2px solid transparent;
+    cursor:pointer; letter-spacing:1.5px; white-space:nowrap;
+    transition:all 0.2s;
+  }
+  .tab-btn.active { color:var(--nebula2); border-bottom-color:var(--nebula2); }
+  .tab-btn:active { background:rgba(124,58,237,0.1); }
+
+  /* ── PAGES ── */
+  .page { display:none; position:relative; z-index:1; }
+  .page.active { display:block; }
+
+  /* ── PS GRID ── */
+  .ps-grid {
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:4px;
+    padding:4px;
+    grid-template-rows: repeat(5, 1fr);
+    height: calc(100dvh - 144px);
+    overflow:hidden;
+  }
+  @media(min-width:480px) { .ps-grid { grid-template-columns: repeat(4,1fr); grid-template-rows: repeat(4, 1fr); } }
+  @media(min-width:640px) { .ps-grid { grid-template-columns: repeat(5,1fr); grid-template-rows: repeat(3, 1fr); } }
+
+  /* Per-PS glow colors */
+  .ps-card[data-ps="1"]  { --c:#FF00FF; --g:rgba(255,0,255,0.5); }
+  .ps-card[data-ps="2"]  { --c:#00FFFF; --g:rgba(0,255,255,0.5); }
+  .ps-card[data-ps="3"]  { --c:#FF3366; --g:rgba(255,51,102,0.5); }
+  .ps-card[data-ps="4"]  { --c:#4488FF; --g:rgba(68,136,255,0.5); }
+  .ps-card[data-ps="5"]  { --c:#CC44FF; --g:rgba(204,68,255,0.5); }
+  .ps-card[data-ps="6"]  { --c:#00FFAA; --g:rgba(0,255,170,0.5); }
+  .ps-card[data-ps="7"]  { --c:#FF8800; --g:rgba(255,136,0,0.5); }
+  .ps-card[data-ps="8"]  { --c:#44FF44; --g:rgba(68,255,68,0.5); }
+  .ps-card[data-ps="9"]  { --c:#FFDD00; --g:rgba(255,221,0,0.5); }
+  .ps-card[data-ps="10"] { --c:#00FF88; --g:rgba(0,255,136,0.5); }
+  .ps-card[data-ps="11"] { --c:#5599FF; --g:rgba(85,153,255,0.5); }
+  .ps-card[data-ps="12"] { --c:#FF44CC; --g:rgba(255,68,204,0.5); }
+  .ps-card[data-ps="13"] { --c:#FF4455; --g:rgba(255,68,85,0.5); }
+  .ps-card[data-ps="14"] { --c:#44CCFF; --g:rgba(68,204,255,0.5); }
+  .ps-card[data-ps="15"] { --c:#00FFCC; --g:rgba(0,255,204,0.5); }
+
+  .ps-card {
+    background: linear-gradient(160deg, #0D0D28 0%, #070718 100%);
+    border: 2px solid var(--c, #1E1E4A);
+    border-radius:10px;
+    overflow:hidden;
+    cursor:pointer;
+    transition:transform 0.15s;
+    position:relative;
+    box-shadow:
+      0 0 8px var(--g, transparent),
+      0 0 22px var(--g, transparent),
+      inset 0 0 12px rgba(0,0,0,0.7);
+    animation: cardGlowPulse 3s ease-in-out infinite;
+    /* Isi penuh cell grid */
+    display:flex; flex-direction:column;
+    min-height:0;
+  }
+  .ps-card:active { transform:scale(0.95); }
+
+  @keyframes cardGlowPulse {
+    0%,100% { box-shadow: 0 0 6px var(--g,transparent), 0 0 16px var(--g,transparent), inset 0 0 12px rgba(0,0,0,0.7); }
+    50%      { box-shadow: 0 0 14px var(--g,transparent), 0 0 32px var(--g,transparent), 0 0 55px var(--g,transparent), inset 0 0 12px rgba(0,0,0,0.7); }
+  }
+  .ps-card.status-warn {
+    animation: cardWarnPulse 0.65s ease-in-out infinite alternate;
+  }
+  @keyframes cardWarnPulse {
+    from { --c:#FF3250; --g:rgba(255,50,80,0.55); box-shadow: 0 0 10px rgba(255,50,80,0.5), 0 0 28px rgba(255,50,80,0.3), inset 0 0 12px rgba(0,0,0,0.7); border-color:#FF3250; }
+    to   { --c:#FF6680; --g:rgba(255,80,100,0.8); box-shadow: 0 0 22px rgba(255,50,80,0.9), 0 0 55px rgba(255,50,80,0.6), 0 0 90px rgba(255,50,80,0.3), inset 0 0 12px rgba(0,0,0,0.7); border-color:#FF6680; }
+  }
+
+  .ps-header {
+    background: rgba(0,0,0,0.55);
+    padding:3px 6px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-radius:8px 8px 0 0;
+    flex-shrink:0;
+  }
+  .ps-num {
+    font-family:'Orbitron',sans-serif; font-size:10px; font-weight:700;
+    color: var(--c, var(--nebula2));
+    text-shadow: 0 0 8px var(--g, transparent);
+  }
+  .ps-badge {
+    font-size:7px; font-weight:700; letter-spacing:1px;
+    padding:2px 5px; border-radius:10px;
+    background:rgba(0,0,0,0.4); color:#445;
+    transition:all 0.3s;
+  }
+  .ps-badge.on     { color:var(--aurora); }
+  .ps-badge.warn   { color:#FF4466; }
+  .ps-badge.loss   { color:var(--solar); }
+  .ps-badge.detect { color:var(--cyan); }
+  .ps-badge.notimer { color:#FF4466; animation: blinkWhite 0.6s ease-in-out infinite alternate; }
+  /* Card kedip putih untuk PS detected tanpa timer (sync dari PC) */
+  @keyframes blinkCard {
+    0%   { box-shadow: 0 0 0px #fff, 0 0 0px #fff; border-color: #ffffff44; }
+    50%  { box-shadow: 0 0 18px #fff8, 0 0 32px #fff4; border-color: #ffffff99; }
+    100% { box-shadow: 0 0 0px #fff, 0 0 0px #fff; border-color: #ffffff44; }
+  }
+  .card-detected {
+    animation: blinkCard 0.7s ease-in-out infinite !important;
+    border: 2px solid #ffffff66 !important;
+  }
+  @keyframes blinkWhite {
+    from { color:#FF4466; text-shadow:0 0 6px rgba(255,68,102,0.4); }
+    to   { color:#ffffff; text-shadow:0 0 12px rgba(255,255,255,0.9); }
+  }
+  .no-timer-warn {
+    font-size:9px; font-family:'Share Tech Mono',monospace;
+    color:#FF4466; text-align:center; height:11px; line-height:11px;
+    animation: blinkWhite 0.6s ease-in-out infinite alternate;
+    letter-spacing:1px; flex-shrink:0; overflow:hidden;
+  }
+
+  /* ── COUNTDOWN SHUTDOWN STRIP ── */
+  .shutdown-strip {
+    display: none;
+    margin: 1px 5px 1px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: rgba(255,30,60,0.10);
+    border: 1px solid rgba(255,50,80,0.4);
+    position: relative;
+    height: 14px;
+    flex-shrink:0;
+  }
+  .shutdown-strip.active { display: block; }
+  .shutdown-bar-fill {
+    position: absolute; top:0; left:0; height:100%;
+    background: linear-gradient(90deg, rgba(255,50,80,0.7), rgba(255,100,50,0.5));
+    transition: width 0.9s linear;
+    border-radius: 5px;
+  }
+  .shutdown-bar-text {
+    position: absolute; inset:0;
+    display: flex; align-items:center; justify-content:center;
+    font-family:'Share Tech Mono',monospace; font-size:9px; font-weight:700;
+    color:#fff; letter-spacing:1px;
+    text-shadow: 0 0 6px rgba(255,50,80,0.9);
+    animation: blinkWhite 0.6s ease-in-out infinite alternate;
+  }
+  @keyframes shutdownPulse {
+    from { box-shadow: 0 0 6px rgba(255,50,80,0.4); }
+    to   { box-shadow: 0 0 16px rgba(255,50,80,0.9), 0 0 30px rgba(255,50,80,0.4); }
+  }
+  .shutdown-strip.active {
+    animation: shutdownPulse 0.65s ease-in-out infinite alternate;
+  }
+  .anti-curang-btn {
+    display:flex; align-items:center; gap:6px; padding:5px 10px;
+    border-radius:20px; border:1.5px solid var(--card-bdr2);
+    background:#0D0D2E; color:var(--dark2); font-size:11px;
+    font-family:'Share Tech Mono',monospace; cursor:pointer;
+    transition:all 0.3s; letter-spacing:0.5px; white-space:nowrap;
+  }
+  .anti-curang-btn.active {
+    border-color:#FF4466; color:#FF4466;
+    background:rgba(255,68,102,0.12);
+    box-shadow:0 0 10px rgba(255,68,102,0.3);
+  }
+  .anti-curang-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+
+  .wa-btn {
+    display:flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:50%;
+    background: rgba(37,211,102,0.12);
+    border: 1.5px solid rgba(37,211,102,0.4);
+    text-decoration:none;
+    transition:all 0.2s;
+    box-shadow: 0 0 8px rgba(37,211,102,0.2);
+  }
+  .wa-btn:active { transform:scale(0.9); background:rgba(37,211,102,0.25); }
+  @media(hover:hover){ .wa-btn:hover { background:rgba(37,211,102,0.2); box-shadow:0 0 14px rgba(37,211,102,0.4); } }
+
+  .ps-glow-bar {
+    height:1px;
+    background: linear-gradient(90deg, transparent 0%, var(--c,#333) 40%, var(--c,#333) 60%, transparent 100%);
+    box-shadow: 0 0 5px var(--g,transparent);
+    opacity:0.6; flex-shrink:0;
+  }
+
+  .ps-timer {
+    font-family:'Share Tech Mono',monospace;
+    font-size:22px; font-weight:700;
+    text-align:center; padding:2px 4px;
+    color:#2a2a44;
+    transition: color 0.3s, text-shadow 0.3s;
+    letter-spacing:2px;
+    flex:1; display:flex; align-items:center; justify-content:center;
+    min-height:0;
+  }
+  .ps-timer.on     { color:var(--aurora);  text-shadow: 0 0 10px rgba(52,211,153,0.7); }
+  .ps-timer.warn   { color:#FF4466;        text-shadow: 0 0 12px rgba(255,68,102,0.9); }
+  .ps-timer.loss   { color:var(--solar);   text-shadow: 0 0 10px rgba(251,191,36,0.7); }
+  .ps-timer.detect { color:var(--cyan);    text-shadow: 0 0 10px rgba(6,182,212,0.7); }
+
+  /* PS controller icon deco at bottom */
+  .ps-bottom-deco {
+    display:flex; align-items:center; justify-content:center;
+    gap:4px; padding:2px 6px 4px;
+    flex-shrink:0;
+  }
+  .ps-deco-dot {
+    width:3px; height:3px; border-radius:50%;
+    background: var(--c,#222);
+    box-shadow: 0 0 4px var(--g,transparent);
+    animation: decoBlip 2.5s ease-in-out infinite;
+  }
+  .ps-deco-dot:nth-child(1){animation-delay:0s;}
+  .ps-deco-dot:nth-child(2){animation-delay:0.4s;}
+  .ps-deco-dot:nth-child(3){animation-delay:0.8s;}
+  .ps-deco-line {
+    flex:1; height:1px;
+    background: linear-gradient(90deg, transparent, var(--c,#222), transparent);
+    opacity:0.45;
+  }
+  .ps-deco-icon {
+    width:22px; height:8px;
+    border:1px solid var(--c,#222);
+    border-radius:2px;
+    box-shadow: 0 0 5px var(--g,transparent);
+    opacity:0.55;
+    position:relative;
+  }
+  .ps-deco-icon::before {
+    content:'';
+    position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+    width:7px; height:2px;
+    background: var(--c,#222); border-radius:1px;
+  }
+  @keyframes decoBlip {
+    0%,100%{opacity:0.25;} 50%{opacity:1;}
+  }
+
+  .ps-income {
+    font-size:9px; font-weight:700; color:var(--solar);
+    text-align:center; min-height:0px;
+    display:none;
+  }
+
+  /* ── DETAIL PANEL (bottom sheet) ── */
+  .sheet-overlay {
+    display:none; position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,0.7); backdrop-filter:blur(4px);
+  }
+  .sheet-overlay.open { display:block; }
+  .bottom-sheet {
+    position:fixed; bottom:0; left:0; right:0; z-index:201;
+    background: #0A0A24;
+    border-radius:20px 20px 0 0;
+    border-top:2px solid var(--nebula);
+    padding: 0 0 env(safe-area-inset-bottom,12px);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .bottom-sheet.open { transform: translateY(0); }
+
+  .sheet-handle {
+    width:40px; height:4px; border-radius:2px;
+    background:rgba(255,255,255,0.15); margin:10px auto 0;
+  }
+  .sheet-header {
+    padding:14px 18px 10px;
+    border-bottom:1px solid var(--card-bdr);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .sheet-title { font-family:'Orbitron',sans-serif; font-size:16px; font-weight:700; color:var(--nebula2); }
+  .sheet-subtitle { font-size:11px; color:var(--dark2); }
+  .sheet-close {
+    width:30px; height:30px; border-radius:50%;
+    background:rgba(255,255,255,0.08); border:none;
+    color:var(--dark2); font-size:16px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .sheet-timer-big {
+    font-family:'Share Tech Mono',monospace;
+    font-size:44px; font-weight:700;
+    text-align:center; padding:14px 0 4px;
+    color:var(--aurora); letter-spacing:3px;
+    text-shadow: 0 0 20px rgba(52,211,153,0.5);
+    transition:color 0.3s, text-shadow 0.3s;
+  }
+  .sheet-timer-big.warn { color:var(--nova); text-shadow:0 0 20px rgba(244,114,182,0.6); }
+  .sheet-timer-big.loss { color:var(--solar); text-shadow:0 0 20px rgba(251,191,36,0.5); }
+  .sheet-timer-big.off  { color:#555577; text-shadow:none; }
+
+  .sheet-income {
+    text-align:center; font-size:14px; font-weight:700;
+    color:var(--solar); padding-bottom:10px;
+    letter-spacing:1px;
+  }
+
+  /* ── PRICE BUTTONS ── */
+  .price-section { padding:10px 14px; }
+  .price-section-title {
+    font-size:11px; font-weight:700; color:var(--dark2);
+    letter-spacing:2px; margin-bottom:8px;
+  }
+  .price-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  @media(min-width:400px) { .price-grid { grid-template-columns:repeat(5,1fr); } }
+
+  .price-btn {
+    background:#0A2200; border:1px solid rgba(52,211,153,0.2);
+    border-radius:8px; padding:7px 4px;
+    font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700;
+    color:#00FF88; cursor:pointer; text-align:center; line-height:1.3;
+    transition:all 0.15s; -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .price-btn:active { transform:scale(0.93); filter:brightness(1.3); }
+  .price-btn.tier-mid  { background:#001B40; border-color:rgba(64,169,255,0.2); color:#40A9FF; }
+  .price-btn.tier-high { background:#1A0A00; border-color:rgba(255,160,64,0.2); color:#FFA040; }
+  .price-btn.tier-vip  { background:#200020; border-color:rgba(255,128,255,0.2); color:#FF80FF; }
+  .price-btn .p-rp { font-size:12px; display:block; }
+  .price-btn .p-time { font-size:9px; display:block; opacity:0.8; }
+
+  /* ── ACTION BUTTONS ── */
+  .action-section { padding:8px 14px 4px; }
+  .action-row { display:flex; gap:6px; margin-bottom:6px; }
+  .action-btn {
+    flex:1; padding:10px 4px;
+    border-radius:9px; border:1px solid transparent;
+    font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:700;
+    cursor:pointer; text-align:center; line-height:1.2;
+    transition:all 0.15s; letter-spacing:0.5px;
+    touch-action:manipulation;
+  }
+  .action-btn:active { transform:scale(0.95); filter:brightness(1.2); }
+  .btn-adzan  { background:#3D2000; color:var(--solar); border-color:rgba(251,191,36,0.2); }
+  .btn-pesan  { background:#001A3D; color:var(--cyan); border-color:rgba(6,182,212,0.2); }
+  .btn-loss   { background:#003D10; color:var(--aurora); border-color:rgba(52,211,153,0.2); }
+  .btn-darurat{ background:#3D003D; color:var(--nova); border-color:rgba(244,114,182,0.2); }
+  .btn-off    { background:#3D0010; color:var(--nova); border-color:rgba(244,114,182,0.2); }
+  .btn-reset  { background:#3D1000; color:var(--comet); border-color:rgba(251,146,60,0.2); }
+  .btn-manual { background:#0A0A30; color:var(--pulsar); border-color:rgba(129,140,248,0.2); }
+  .btn-active { filter:brightness(2); border-color:rgba(255,255,255,0.4); }
+
+  /* ── MANUAL TIME INPUT ── */
+  .manual-section {
+    padding:10px 14px;
+    background:rgba(15,15,46,0.5);
+    border-top:1px solid var(--card-bdr);
+    border-bottom:1px solid var(--card-bdr);
+    display:none;
+  }
+  .manual-section.open { display:block; }
+  .manual-title { font-size:11px; color:var(--pulsar); font-weight:700; letter-spacing:2px; margin-bottom:10px; }
+  .manual-inputs { display:flex; gap:8px; align-items:center; justify-content:center; margin-bottom:10px; }
+  .manual-col { text-align:center; }
+  .manual-col label { font-size:9px; color:var(--dark2); display:block; margin-bottom:4px; letter-spacing:1px; }
+  .manual-spin {
+    width:68px;
+    background:#0A0A30; border:1.5px solid var(--card-bdr2);
+    color:var(--white); font-family:'Share Tech Mono',monospace; font-size:20px;
+    text-align:center; border-radius:8px; padding:8px 4px;
+    -webkit-appearance:none; appearance:none;
+    outline:none;
+  }
+  .manual-spin:focus { border-color:var(--nebula2); box-shadow:0 0 0 2px rgba(157,78,221,0.25); }
+  .manual-colon { font-family:'Share Tech Mono',monospace; font-size:24px; color:var(--card-bdr2); margin-top:14px; }
+
+  .price-input-row {
+    display:flex; gap:8px; align-items:center; margin-bottom:10px;
+  }
+  .price-input-label { font-size:11px; color:var(--dark2); white-space:nowrap; font-weight:700; }
+  .price-input {
+    flex:1;
+    background:#0A0A30; border:1.5px solid var(--card-bdr2);
+    color:var(--white); font-family:'Share Tech Mono',monospace; font-size:16px;
+    text-align:center; border-radius:8px; padding:8px 10px;
+    outline:none;
+  }
+  .price-input:focus { border-color:var(--aurora); box-shadow:0 0 0 2px rgba(52,211,153,0.2); }
+  .price-preview {
+    font-size:11px; color:var(--aurora); text-align:center;
+    min-height:18px; margin-bottom:6px; font-weight:700;
+  }
+  .apply-btn {
+    width:100%; padding:13px;
+    background: linear-gradient(135deg, var(--nebula), var(--nebula2));
+    border:none; border-radius:10px;
+    font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700;
+    color:var(--white); cursor:pointer; letter-spacing:2px;
+    transition:all 0.2s; box-shadow:0 4px 16px rgba(124,58,237,0.4);
+  }
+  .apply-btn:active { transform:scale(0.97); box-shadow:0 2px 8px rgba(124,58,237,0.3); }
+
+  /* ── PESAN PANEL ── */
+  .pesan-section {
+    padding:10px 14px;
+    border-top:1px solid var(--card-bdr);
+    display:none;
+  }
+  .pesan-section.open { display:block; }
+  .pesan-template { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; }
+  .pesan-tmpl-btn {
+    background:#0A0A25; border:1px solid var(--card-bdr);
+    border-radius:8px; padding:10px 8px;
+    font-family:'Rajdhani',sans-serif; font-size:10px; font-weight:700;
+    color:var(--pulsar); cursor:pointer; text-align:center; line-height:1.3;
+    transition:all 0.15s;
+  }
+  .pesan-tmpl-btn:active { background:rgba(129,140,248,0.15); transform:scale(0.96); }
+  .pesan-custom-row { display:flex; gap:6px; }
+  .pesan-input {
+    flex:1;
+    background:#0A0A30; border:1.5px solid var(--card-bdr2);
+    color:var(--white); font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:600;
+    border-radius:8px; padding:10px 12px; outline:none;
+  }
+  .pesan-input:focus { border-color:var(--cyan); }
+  .send-btn {
+    background:var(--star-blue); border:none; border-radius:8px;
+    padding:10px 14px; font-size:18px; cursor:pointer;
+    transition:all 0.15s;
+  }
+  .send-btn:active { transform:scale(0.93); }
+
+  /* ── QUICK ACTION PAGE ── */
+  .quick-page { padding:12px; }
+  .quick-section-title {
+    font-family:'Orbitron',sans-serif; font-size:11px; font-weight:700;
+    color:var(--pulsar); letter-spacing:2px; margin-bottom:10px;
+    padding-bottom:6px; border-bottom:1px solid var(--card-bdr);
+  }
+  .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .quick-btn {
+    background:rgba(15,15,46,0.9);
+    border:1px solid var(--card-bdr2);
+    border-radius:12px; padding:16px 10px;
+    font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; text-align:center; line-height:1.4;
+    transition:all 0.2s; touch-action:manipulation;
+  }
+  .quick-btn:active { transform:scale(0.95); }
+  .quick-btn .q-icon { font-size:24px; display:block; margin-bottom:4px; }
+  .quick-btn .q-label { display:block; letter-spacing:0.5px; }
+  .quick-btn.red  { border-color:rgba(244,114,182,0.3); }
+  .quick-btn.red .q-label { color:var(--nova); }
+  .quick-btn.green{ border-color:rgba(52,211,153,0.3); }
+  .quick-btn.green .q-label { color:var(--aurora); }
+  .quick-btn.blue { border-color:rgba(59,130,246,0.3); }
+  .quick-btn.blue .q-label { color:var(--star-blue); }
+  .quick-btn.yellow{ border-color:rgba(251,191,36,0.3); }
+  .quick-btn.yellow .q-label { color:var(--solar); }
+  .quick-btn.purple{ border-color:rgba(129,140,248,0.3); }
+  .quick-btn.purple .q-label { color:var(--pulsar); }
+  .quick-btn.cyan { border-color:rgba(6,182,212,0.3); }
+  .quick-btn.cyan .q-label { color:var(--cyan); }
+
+  /* Custom time panel */
+  .custom-time-panel {
+    background:rgba(15,15,46,0.9);
+    border:1px solid var(--card-bdr2);
+    border-radius:12px; padding:14px;
+    margin-bottom:12px; display:none;
+  }
+  .custom-time-panel.open { display:block; }
+  .ct-target-select {
+    width:100%; background:#0A0A30; border:1.5px solid var(--card-bdr2);
+    color:var(--white); font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:600;
+    border-radius:8px; padding:9px 12px; outline:none; margin-bottom:10px;
+    -webkit-appearance:none; appearance:none;
+  }
+
+  /* ── SUHU/FAN/GAME STRIP — nempel di tiap ps-card ── */
+  .ps-suhu-strip {
+    display:flex; align-items:center; justify-content:center;
+    gap:4px; padding:2px 4px 0;
+    font-family:'Share Tech Mono',monospace; font-size:8px;
+    color:#5a5a77; letter-spacing:0.2px;
+    flex-shrink:0; overflow:hidden; white-space:nowrap;
+  }
+  .ps-suhu-strip .v-cpu, .ps-suhu-strip .v-rsx, .ps-suhu-strip .v-fan { transition: color 0.3s; }
+  .ps-suhu-strip.s-aman    .v-cpu, .ps-suhu-strip.s-aman    .v-rsx { color: var(--aurora); }
+  .ps-suhu-strip.s-waspada .v-cpu, .ps-suhu-strip.s-waspada .v-rsx { color: var(--solar); }
+  .ps-suhu-strip.s-bahaya  .v-cpu, .ps-suhu-strip.s-bahaya  .v-rsx { color: var(--nova); text-shadow:0 0 6px rgba(244,114,182,0.6); }
+  .ps-suhu-strip .v-fan { color: var(--pulsar); }
+  .ps-game-strip {
+    padding:2px 4px 3px;
+    flex-shrink:0; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:1px; min-height:22px;
+  }
+  /* STANDBY state */
+  .ps-game-strip .game-line1 {
+    font-family:'Share Tech Mono',monospace; font-size:7px;
+    color:#3a3a55; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:100%; text-align:center; display:block;
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+  .ps-game-strip .game-line2 {
+    font-family:'Rajdhani',sans-serif; font-size:7px; font-weight:700;
+    color:#2e2e48; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:100%; text-align:center; display:block; letter-spacing:0.5px;
+    transition: color 0.3s, text-shadow 0.3s;
+  }
+  /* ACTIVE (game running) */
+  .ps-game-strip.active .game-line1 {
+    font-family:'Share Tech Mono',monospace; font-size:7.5px; font-weight:700;
+    color: var(--cyan);
+    text-shadow: 0 0 8px rgba(6,182,212,0.9), 0 0 16px rgba(6,182,212,0.4);
+    letter-spacing:0.3px;
+  }
+  .ps-game-strip.active .game-line2 {
+    font-size:7px; font-weight:700; letter-spacing:1.5px;
+    background: linear-gradient(90deg, var(--nebula2), var(--cyan), var(--nova), var(--nebula2));
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gameTextFlow 2.5s linear infinite;
+    text-shadow: none;
+  }
+  @keyframes gameTextFlow {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* ── NOTIF PAGE ── */
+  .notif-page { padding:12px; }
+  .notif-list { display:flex; flex-direction:column; gap:6px; }
+  .notif-item {
+    background: rgba(15,15,46,0.9);
+    border:1px solid var(--card-bdr);
+    border-radius:10px;
+    padding:10px 12px;
+    display:flex; align-items:center; gap:10px;
+    animation:fadeInUp 0.3s ease both;
+  }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+  .notif-time { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--dark2); min-width:38px; }
+  .notif-ps { font-size:11px; font-weight:700; color:var(--nova); min-width:52px; }
+  .notif-msg { font-size:12px; color:var(--star-w); flex:1; }
+  .notif-empty { text-align:center; color:var(--dark2); font-size:13px; padding:30px; letter-spacing:1px; }
+
+  /* ── LOADING OVERLAY ── */
+  .loading-overlay {
+    position:fixed; inset:0; z-index:999;
+    background: var(--bg-root);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition:opacity 0.5s;
+  }
+  .loading-logo {
+    width:80px; height:80px; border-radius:50%;
+    background: radial-gradient(circle at 40% 35%, #1a1a4a, #050510);
+    border:3px solid var(--nebula2);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Orbitron',sans-serif; font-size:18px; font-weight:900;
+    color:var(--nebula2);
+    box-shadow: 0 0 40px rgba(157,78,221,0.6);
+    margin-bottom:20px;
+    animation:loadPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes loadPulse {
+    0%,100%{box-shadow:0 0 30px rgba(157,78,221,0.5);}
+    50%{box-shadow:0 0 60px rgba(157,78,221,0.9), 0 0 100px rgba(157,78,221,0.3);}
+  }
+  .loading-text { font-family:'Orbitron',sans-serif; font-size:13px; color:var(--nebula2); letter-spacing:3px; margin-bottom:8px; }
+  .loading-sub  { font-size:11px; color:var(--dark2); letter-spacing:2px; }
+  .loading-dots { margin-top:16px; display:flex; gap:6px; }
+  .loading-dot  { width:6px; height:6px; border-radius:50%; background:var(--nebula2); animation:dotBounce 1.2s ease-in-out infinite; }
+  .loading-dot:nth-child(2){animation-delay:0.2s;}
+  .loading-dot:nth-child(3){animation-delay:0.4s;}
+  @keyframes dotBounce { 0%,60%,100%{transform:translateY(0);opacity:0.4;} 30%{transform:translateY(-8px);opacity:1;} }
+
+  /* ── TOAST ── */
+  .toast {
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+    background: rgba(15,15,46,0.97);
+    border:1px solid var(--nebula);
+    border-radius:24px; padding:10px 20px;
+    font-size:13px; font-weight:700; color:var(--white);
+    z-index:500; opacity:0; pointer-events:none;
+    transition:all 0.3s; white-space:nowrap;
+    box-shadow:0 4px 20px rgba(124,58,237,0.4);
+  }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── PWA INSTALL BANNER ── */
+  .pwa-banner {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+    background: linear-gradient(135deg, #1a0a40, #0a0a24);
+    border-top: 2px solid var(--nebula2);
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 -4px 30px rgba(124,58,237,0.5);
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .pwa-banner.show { transform: translateY(0); }
+  .pwa-banner-icon {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    border: 1.5px solid var(--nebula2);
+  }
+  .pwa-banner-text { flex: 1; }
+  .pwa-banner-title { font-family:'Orbitron',sans-serif; font-size:12px; font-weight:700; color:var(--nebula2); letter-spacing:1px; }
+  .pwa-banner-sub { font-size:10px; color:var(--dark2); letter-spacing:0.5px; margin-top:2px; }
+  .pwa-banner-btn {
+    background: linear-gradient(135deg, var(--nebula), var(--nebula2));
+    border: none; border-radius: 8px; padding: 8px 14px;
+    font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:700;
+    color: white; cursor: pointer; white-space:nowrap; letter-spacing:1px;
+    flex-shrink: 0;
+  }
+  .pwa-banner-close {
+    background: none; border: none; color: var(--dark2); font-size: 18px;
+    cursor: pointer; padding: 4px; flex-shrink: 0;
+  }
+  /* ── SOUND WAVE INDICATOR ── */
+  .sound-wave {
+    position: fixed; top: 60px; right: 12px; z-index: 600;
+    display: flex; align-items: flex-end; gap: 2px; height: 20px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .sound-wave.active { opacity: 1; }
+  .sw-bar {
+    width: 3px; background: var(--nebula2); border-radius: 2px;
+    animation: swAnim 0.5s ease-in-out infinite alternate;
+  }
+  .sw-bar:nth-child(1) { animation-delay: 0s; }
+  .sw-bar:nth-child(2) { animation-delay: 0.1s; }
+  .sw-bar:nth-child(3) { animation-delay: 0.2s; }
+  .sw-bar:nth-child(4) { animation-delay: 0.1s; }
+  @keyframes swAnim {
+    from { height: 4px; }
+    to   { height: 18px; }
+  }
+
+  ::-webkit-scrollbar { width:4px; height:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(124,58,237,0.4); border-radius:2px; }
+
+  /* ── RIPPLE ── */
+  .ripple { position:relative; overflow:hidden; }
+  .ripple::after {
+    content:''; position:absolute;
+    border-radius:50%; background:rgba(255,255,255,0.15);
+    transform:scale(0); animation:rippleAnim 0.4s ease-out;
+    pointer-events:none;
+  }
+  @keyframes rippleAnim { to{transform:scale(2); opacity:0;} }
+
+  /* kbd style numpad */
+  .numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:8px; }
+  .num-key {
+    background:#0D0D2E; border:1px solid var(--card-bdr2);
+    border-radius:8px; padding:12px 4px;
+    font-family:'Share Tech Mono',monospace; font-size:18px; font-weight:700;
+    color:var(--dark); cursor:pointer; text-align:center;
+    transition:all 0.1s; touch-action:manipulation;
+  }
+  .num-key:active { background:rgba(124,58,237,0.3); color:white; transform:scale(0.93); }
+  .num-key.key-del { color:var(--nova); font-size:14px; }
+  .num-key.key-ok  { background:linear-gradient(135deg,var(--nebula),var(--nebula2)); color:white; font-size:13px; letter-spacing:1px; }
+
+  /* Numpad price display */
+  .numpad-display {
+    background:#050514; border:2px solid var(--nebula);
+    border-radius:10px; padding:12px 16px;
+    font-family:'Share Tech Mono',monospace; font-size:24px; font-weight:700;
+    color:var(--white); text-align:right; margin-bottom:8px;
+    min-height:52px;
+    display:flex; align-items:center; justify-content:flex-end;
+    box-shadow:inset 0 0 20px rgba(124,58,237,0.1);
+  }
+  .numpad-preview { font-size:11px; color:var(--aurora); text-align:center; min-height:16px; margin-bottom:8px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-logo">BH</div>
+  <div class="loading-text">BIGHERO PS</div>
+  <div class="loading-sub">CONNECTING TO BIGHERO SERVER...</div>
+  <div class="loading-dots">
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Sound wave indicator -->
+<div class="sound-wave" id="soundWave">
+  <div class="sw-bar"></div>
+  <div class="sw-bar"></div>
+  <div class="sw-bar"></div>
+  <div class="sw-bar"></div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="pwa-banner" id="pwaBanner">
+  <img src="icons/icon-96x96.png" class="pwa-banner-icon" alt="BigHero">
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">INSTALL BIGHERO PS</div>
+    <div class="pwa-banner-sub">Tambahkan ke layar utama HP kamu</div>
+  </div>
+  <button class="pwa-banner-btn" id="pwaInstallBtn">INSTALL</button>
+  <button class="pwa-banner-close" id="pwaDismissBtn">✕</button>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">BH</div>
+    <div class="brand-text">
+      <div class="b1">BIGHERO</div>
+      <div class="b2">GALAXY CONTROL</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="fb-badge">
+      <div class="fb-dot" id="fbDot"></div>
+      <span id="fbStatus" style="color:var(--dark2)">SERVER</span>
+    </div>
+    <button class="anti-curang-btn" id="antiCurangBtn" onclick="toggleAntiCurang()">
+      <div class="anti-curang-dot"></div>
+      <span id="antiCurangLabel">ANTI CURANG</span>
+    </button>
+    <a href="https://wa.me/62816976242" target="_blank" class="wa-btn" title="Hubungi Admin">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
+    <div class="clock-badge" id="clockBadge">00:00:00</div>
+  </div>
+</div>
+
+<!-- STAT BAR -->
+<div class="stat-bar">
+  <div class="stat-item">
+    <span class="stat-label">🎮 PS AKTIF</span>
+    <span class="stat-value green" id="statAktif">0/15</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">💰 PENDAPATAN</span>
+    <span class="stat-value yellow" id="statPendapatan">Rp0</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">📋 TRANSAKSI</span>
+    <span class="stat-value purple" id="statTransaksi">0</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">🔔 NEXT ALERT</span>
+    <span class="stat-value cyan" id="statNextAlert">--:--:--</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-label">👑 PS LAKU</span>
+    <span class="stat-value yellow" id="statPsLaku">—</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('monitor')">⊞ MONITOR</button>
+  <button class="tab-btn" onclick="switchTab('quick')">⚡ QUICK</button>
+  <button class="tab-btn" onclick="switchTab('notif')">🔔 NOTIF</button>
+</div>
+
+<!-- PAGE: MONITOR -->
+<div class="page active" id="page-monitor">
+  <div class="ps-grid" id="psGrid"></div>
+</div>
+
+<!-- PAGE: QUICK ACTION -->
+<div class="page" id="page-quick">
+  <div class="quick-page">
+    <div class="quick-section-title">⚡ QUICK ACTION GLOBAL</div>
+    <div class="quick-grid">
+      <button class="quick-btn red" onclick="quickResetAll()">
+        <span class="q-icon">↺</span><span class="q-label">RESET SEMUA</span>
+      </button>
+      <button class="quick-btn red" onclick="quickOffAll()">
+        <span class="q-icon">⏻</span><span class="q-label">OFF SEMUA</span>
+      </button>
+      <button class="quick-btn blue" onclick="quickPesanGlobal()">
+        <span class="q-icon">✉</span><span class="q-label">PESAN GLOBAL</span>
+      </button>
+      <button class="quick-btn yellow" onclick="toggleCustomTime()">
+        <span class="q-icon">⏱</span><span class="q-label">CUSTOM TIME</span>
+      </button>
+    </div>
+
+    <!-- Custom Time Panel -->
+    <div class="custom-time-panel" id="customTimePanel">
+      <div class="quick-section-title" style="margin-bottom:12px;">⏱ CUSTOM TIME</div>
+      <select class="ct-target-select" id="ctTarget">
+        <option value="SEMUA">— SEMUA PS —</option>
+      </select>
+      <div class="manual-inputs">
+        <div class="manual-col">
+          <label>JAM</label>
+          <input type="number" class="manual-spin" id="ctH" min="0" max="23" value="0">
+        </div>
+        <div class="manual-colon">:</div>
+        <div class="manual-col">
+          <label>MENIT</label>
+          <input type="number" class="manual-spin" id="ctM" min="0" max="59" value="30">
+        </div>
+        <div class="manual-colon">:</div>
+        <div class="manual-col">
+          <label>DETIK</label>
+          <input type="number" class="manual-spin" id="ctS" min="0" max="59" value="0">
+        </div>
+      </div>
+      <button class="apply-btn" onclick="applyCustomTime()">TERAPKAN WAKTU</button>
+    </div>
+
+    <!-- Global pesan panel -->
+    <div class="quick-section-title" style="margin-top:4px;">✉ PESAN TEMPLATE GLOBAL</div>
+    <div class="pesan-template" style="margin-bottom:10px;">
+      <button class="pesan-tmpl-btn" onclick="sendGlobalMsg('MOHON MAAF JANGAN BERISIK DULU!! LAGI WAKTU SHOLAT!!')">🕌 JAM SHOLAT</button>
+      <button class="pesan-tmpl-btn" onclick="sendGlobalMsg('KENDARAAN TOLONG PARKIR MIRING, JANGAN DI DEPAN PINTU')">🚗 PARKIR</button>
+      <button class="pesan-tmpl-btn" onclick="sendGlobalMsg('TOLONG TUTUP PINTU RAPAT, SEDANG JAM SHOLAT/PENGAJIAN')">🚪 PINTU</button>
+      <button class="pesan-tmpl-btn" onclick="sendGlobalMsg('BANTING STIK PS DENDA 50RB, JAGA FASILITAS BERSAMA')">🎮 STIK</button>
+    </div>
+    <div class="pesan-custom-row">
+      <input class="pesan-input" id="globalMsgInput" placeholder="Ketik pesan custom...">
+      <button class="send-btn" onclick="sendGlobalMsgCustom()">📤</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: NOTIF -->
+<div class="page" id="page-notif">
+  <div class="notif-page">
+    <div class="notif-list" id="notifList">
+      <div class="notif-empty">Belum ada notifikasi</div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM SHEET OVERLAY -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+
+<!-- BOTTOM SHEET: PS DETAIL -->
+<div class="bottom-sheet" id="bottomSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div>
+      <div class="sheet-title" id="sheetTitle">PS 01</div>
+      <div class="sheet-subtitle" id="sheetSubtitle">192.168.0.31</div>
+    </div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+  </div>
+
+  <div class="sheet-timer-big off" id="sheetTimer">00:00:00</div>
+  <div class="sheet-income" id="sheetIncome"></div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="action-section">
+    <div class="action-row">
+      <button class="action-btn btn-adzan" id="btnAdzan" onclick="sheetAdzan()">🕌 ADZAN</button>
+      <button class="action-btn btn-pesan" onclick="togglePesan()">✉ PESAN</button>
+      <button class="action-btn btn-loss" id="btnLoss" onclick="sheetLoss()">⏩ LOSS</button>
+    </div>
+    <div class="action-row">
+      <button class="action-btn btn-darurat" onclick="sheetDarurat()">⚡ 5 MENIT</button>
+      <button class="action-btn btn-off" onclick="sheetOff()">⏻ OFF</button>
+      <button class="action-btn btn-reset" onclick="sheetReset()">↺ RESET</button>
+    </div>
+    <div class="action-row">
+      <button class="action-btn btn-manual" style="flex:1" onclick="toggleManual()">⚙ SET MANUAL / INPUT HARGA</button>
+    </div>
+  </div>
+
+  <!-- PESAN SECTION -->
+  <div class="pesan-section" id="pesanSection">
+    <div class="price-section-title">✉ KIRIM PESAN KE PS</div>
+    <div class="pesan-template">
+      <button class="pesan-tmpl-btn" onclick="sheetPesanTemplate('MOHON MAAF JANGAN BERISIK DULU!! LAGI WAKTU SHOLAT!!')">🕌 JAM SHOLAT</button>
+      <button class="pesan-tmpl-btn" onclick="sheetPesanTemplate('KENDARAAN TOLONG PARKIR MIRING, JANGAN DI DEPAN PINTU')">🚗 PARKIR</button>
+      <button class="pesan-tmpl-btn" onclick="sheetPesanTemplate('TOLONG TUTUP PINTU RAPAT, SEDANG JAM SHOLAT/PENGAJIAN')">🚪 PINTU</button>
+      <button class="pesan-tmpl-btn" onclick="sheetPesanTemplate('BANTING STIK PS DENDA 50RB, JAGA FASILITAS BERSAMA')">🎮 STIK</button>
+    </div>
+    <div class="pesan-custom-row">
+      <input class="pesan-input" id="pesanInput" placeholder="Pesan custom...">
+      <button class="send-btn" onclick="sheetPesanCustom()">📤</button>
+    </div>
+  </div>
+
+  <!-- MANUAL SECTION -->
+  <div class="manual-section" id="manualSection">
+    <div class="manual-title">⚙ SET MANUAL / INPUT HARGA</div>
+
+    <!-- Numpad for price input -->
+    <div class="price-section-title">INPUT NOMINAL (Rp)</div>
+    <div class="numpad-display" id="numpadDisplay">0</div>
+    <div class="numpad-preview" id="numpadPreview"></div>
+    <div class="numpad">
+      <button class="num-key" onclick="numKey('1')">1</button>
+      <button class="num-key" onclick="numKey('2')">2</button>
+      <button class="num-key" onclick="numKey('3')">3</button>
+      <button class="num-key" onclick="numKey('4')">4</button>
+      <button class="num-key" onclick="numKey('5')">5</button>
+      <button class="num-key" onclick="numKey('6')">6</button>
+      <button class="num-key" onclick="numKey('7')">7</button>
+      <button class="num-key" onclick="numKey('8')">8</button>
+      <button class="num-key" onclick="numKey('9')">9</button>
+      <button class="num-key" onclick="numKey('000')">000</button>
+      <button class="num-key" onclick="numKey('0')">0</button>
+      <button class="num-key key-del" onclick="numDel()">⌫</button>
+    </div>
+    <button class="num-key key-ok" style="width:100%;margin-bottom:12px;" onclick="numApply()">TERAPKAN HARGA</button>
+
+    <div style="border-top:1px solid var(--card-bdr);margin-bottom:10px;padding-top:10px;">
+      <div class="price-section-title">ATAU SET WAKTU MANUAL</div>
+    </div>
+    <div class="manual-inputs">
+      <div class="manual-col">
+        <label>JAM</label>
+        <input type="number" class="manual-spin" id="manH" min="0" max="23" value="0">
+      </div>
+      <div class="manual-colon">:</div>
+      <div class="manual-col">
+        <label>MENIT</label>
+        <input type="number" class="manual-spin" id="manM" min="0" max="59" value="30">
+      </div>
+      <div class="manual-colon">:</div>
+      <div class="manual-col">
+        <label>DETIK</label>
+        <input type="number" class="manual-spin" id="manS" min="0" max="59" value="0">
+      </div>
+    </div>
+    <button class="apply-btn" onclick="applyManualTime()">TERAPKAN WAKTU MANUAL</button>
+    <div style="height:10px;"></div>
+  </div>
+
+  <!-- PRICE BUTTONS -->
+  <div class="price-section" id="priceSection">
+    <div class="price-section-title" id="priceSectionTitle">HARGA PS 01 (REGULER)</div>
+    <div class="price-grid" id="priceGrid"></div>
+  </div>
+
+  <div style="height:20px;"></div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc, updateDoc, getDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── CONFIG (sama persis dengan Python) ──
+const FB_CONFIG = {
+  apiKey: "AIzaSyBy2TDPRkz_iZWWe2zvjzsLXXY1hThjKJE",
+  projectId: "clan-arw",
+  appId: "clan-arw"
+};
+
+// ── DATA HARGA ──
+const HARGA_PS_1_5 = {1000:10*60,2000:30*60,3000:50*60,3500:60*60,4000:70*60,5000:80*60,6000:100*60,7000:120*60,8000:140*60,9000:160*60,10000:180*60};
+const HARGA_PS_6_15 = {3000:30*60,5000:60*60,7000:80*60,8000:90*60,9000:100*60,10000:120*60,14000:180*60};
+const PS_COUNT = 15;
+const BASE_IP = 31;
+
+function getHargaTable(n) { return (n>=1&&n<=5) ? HARGA_PS_1_5 : HARGA_PS_6_15; }
+function getPsIp(n) { return `192.168.0.${BASE_IP+n-1}`; }
+function fmtSecs(s) { if(s<0)s=0; let h=Math.floor(s/3600),r=s%3600,m=Math.floor(r/60),sc=r%60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`; }
+function fmtRp(v) { if(v>=1000000)return `Rp${(v/1000000).toFixed(1)}Jt`; if(v>=1000)return `Rp${Math.floor(v/1000)}K`; return `Rp${v}`; }
+
+// ── STATE ──
+window.psState = {};
+for(let i=1;i<=PS_COUNT;i++) {
+  window.psState[i] = { seconds_left:0, running:false, loss_mode:false, total_added:0,
+    total_pendapatan:0, transactions:0, warned_5min:false,
+    temps: { cpu:null, rsx:null, fan:null, status:'N/A', game:null } };
+}
+window.totalPendapatan = 0;
+window.totalTransaksi = 0;
+window.notifLog = [];
+window.selectedPS = null;
+window.fbDb = null;
+window.fbConnected = false;
+window.lastOwnSave = null;
+window.numpadVal = '';
+
+// ── FIREBASE INIT ──
+let app, db;
+try {
+  app = initializeApp(FB_CONFIG);
+  db = getFirestore(app);
+  window.fbDb = db;
+  setFbStatus(true,'CONNECTED');
+  loadState();
+  startLiveListener();
+} catch(e) {
+  console.error('[Server]',e);
+  setFbStatus(false,'OFFLINE');
+}
+
+function setFbStatus(ok, text) {
+  window.fbConnected = ok;
+  const dot = document.getElementById('fbDot');
+  const st  = document.getElementById('fbStatus');
+  dot.className = 'fb-dot ' + (ok?'on':ok===false?'err':'');
+  st.textContent = text;
+  st.style.color = ok ? 'var(--aurora)' : '#888899';
+}
+
+async function loadState() {
+  try {
+    const snap = await getDoc(doc(db,'billing_state','current'));
+    if(snap.exists()) applyStateDict(snap.data());
+    logNotif('SYSTEM','✓ State loaded dari server');
+  } catch(e) { console.error('[Load]',e); }
+}
+
+function startLiveListener() {
+  onSnapshot(doc(db,'billing_state','current'), (snap)=>{
+    if(!snap.exists()) return;
+    const data = snap.data();
+    const savedAt = data.saved_at || '';
+    const source  = data.source  || 'pc';
+
+    // Sync anti_curang toggle dari PC
+    if(data.anti_curang !== undefined && data.anti_curang !== window.antiCurangOn){
+      window.antiCurangOn = data.anti_curang;
+      const btn = document.getElementById('antiCurangBtn');
+      const lbl = document.getElementById('antiCurangLabel');
+      if(btn && lbl){
+        if(window.antiCurangOn){
+          btn.classList.add('active');
+          lbl.textContent='ANTI CURANG: ON';
+        } else {
+          btn.classList.remove('active');
+          lbl.textContent='ANTI CURANG';
+          for(let i=1;i<=PS_COUNT;i++){
+            if(window.psState && window.psState[i]) window.psState[i]._noTimerCountdown=null;
+            const el=document.getElementById(`notimer-${i}`);
+            if(el) el.textContent='';
+          }
+        }
+      }
+    }
+
+    // Abaikan jika ini state yang kita sendiri kirim
+    if(source==='mobile' && savedAt===window.lastOwnSave) return;
+    applyStateDict(data);
+    if(source==='pc') logNotif('SYNC 🖥','Update dari PC');
+  }, err=>{ console.error('[Server]',err); setFbStatus(false,'OFFLINE'); });
+}
+
+function applyStateDict(data) {
+  // Sync anti_curang dari Firebase (bisa diset PC atau HP lain)
+  if(data.anti_curang !== undefined && data.anti_curang !== window.antiCurangOn){
+    window.antiCurangOn = data.anti_curang;
+    const btn = document.getElementById('antiCurangBtn');
+    const lbl = document.getElementById('antiCurangLabel');
+    if(window.antiCurangOn){
+      btn.classList.add('active'); lbl.textContent='ANTI CURANG: ON';
+    } else {
+      btn.classList.remove('active'); lbl.textContent='ANTI CURANG';
+      for(let i=1;i<=PS_COUNT;i++){
+        if(window.psState && window.psState[i]) window.psState[i]._noTimerCountdown=null;
+        const el=document.getElementById('notimer-'+i);
+        if(el) el.textContent='';
+        const sdStrip=document.getElementById('sdstrip-'+i);
+        if(sdStrip) sdStrip.classList.remove('active');
+      }
+    }
+  }
+  window.totalPendapatan = data.total_pendapatan || 0;
+  window.totalTransaksi  = data.total_transaksi  || 0;
+  const ps = data.ps || {};
+  const ntcMap = data.no_timer_countdown || {};
+  const nowMs = Date.now();
+
+  // ── Suhu CPU/RSX/FAN + nama game (dari PC via webMAN), field terpisah dari 'ps' ──
+  const temps = data.temps || {};
+  for(let i=1;i<=PS_COUNT;i++){
+    const t = temps[String(i)];
+    if(t){
+      window.psState[i].temps = {
+        cpu: t.cpu ?? null, rsx: t.rsx ?? null, fan: t.fan ?? null,
+        status: t.status || 'N/A', game: t.game || null
+      };
+      updateSuhuStrip(i);
+    }
+  }
+
+  for(let i=1;i<=PS_COUNT;i++){
+    const p = ps[String(i)] || {};
+    if(!Object.keys(p).length) continue;
+    const s = window.psState[i];
+
+    // ── SINKRONISASI WAKTU BERBASIS END_EPOCH ──
+    // Jika ada end_epoch_ms → hitung sisa waktu dari waktu nyata
+    // Ini memastikan timer tetap sinkron walau app ditutup/dibuka
+    if(p.end_epoch_ms && p.running && !p.loss_mode){
+      const realSecs = Math.max(0, Math.round((p.end_epoch_ms - nowMs) / 1000));
+      s.seconds_left = realSecs;
+    } else {
+      s.seconds_left = p.seconds_left ?? s.seconds_left;
+    }
+    // Simpan end_epoch_ms untuk perhitungan lokal
+    if(p.end_epoch_ms) s.end_epoch_ms = p.end_epoch_ms;
+
+    s.running          = p.running          ?? s.running;
+    s.loss_mode        = p.loss_mode        ?? s.loss_mode;
+    s.total_added      = p.total_added      ?? s.total_added;
+    s.total_pendapatan = p.total_pendapatan ?? s.total_pendapatan;
+    s.transactions     = p.transactions     ?? s.transactions;
+    s.warned_5min      = p.warned_5min      ?? s.warned_5min;
+
+    // Baca detected dari PC via Firebase
+    if(p.detected !== undefined) s.detected = p.detected;
+
+    // Baca countdown dari Firebase (dikirim PC — HP hanya monitor, tidak hitung sendiri)
+    const syncedCd = ntcMap[String(i)];
+    if(syncedCd != null){
+      s._syncedCountdown = syncedCd;
+      s._noTimerCountdown = syncedCd; // pakai nilai PC langsung
+    } else {
+      s._syncedCountdown = null;
+      // Hanya reset _noTimerCountdown jika memang tidak ada detected
+      if(!s.detected && !(s.running && s.seconds_left===0)){
+        s._noTimerCountdown = null;
+      }
+    }
+
+    refreshCard(i);
+  }
+  updateStatBar();
+  updateNextAlert();
+  if(window.selectedPS) updateSheet(window.selectedPS);
+}
+
+async function saveState() {
+  const now = new Date().toISOString();
+  window.lastOwnSave = now;
+  const state = {
+    saved_at: now, source:'mobile',
+    total_pendapatan: window.totalPendapatan,
+    total_transaksi:  window.totalTransaksi,
+    ps: {}
+  };
+  const nowSave = Date.now();
+  for(let i=1;i<=PS_COUNT;i++){
+    const s = window.psState[i];
+    // Hitung end_epoch_ms berdasarkan waktu sekarang + sisa detik
+    // Ini memungkinkan sinkronisasi waktu akurat walau app ditutup/dibuka
+    let endEpoch = null;
+    if(s.running && !s.loss_mode && s.seconds_left > 0){
+      endEpoch = nowSave + (s.seconds_left * 1000);
+    } else if(s.end_epoch_ms && s.running && !s.loss_mode){
+      endEpoch = s.end_epoch_ms; // pertahankan yang lama kalau masih valid
+    }
+    state.ps[String(i)] = {
+      seconds_left: s.seconds_left, running:s.running, loss_mode:s.loss_mode,
+      total_added:s.total_added, total_pendapatan:s.total_pendapatan,
+      transactions:s.transactions, warned_5min:s.warned_5min,
+      end_epoch_ms: endEpoch
+    };
+  }
+  try {
+    await setDoc(doc(db,'billing_state','current'), state);
+    setFbStatus(true,'SYNC ✓');
+    setTimeout(()=>{ if(window.fbConnected) setFbStatus(true,'ONLINE'); },2000);
+  } catch(e) {
+    console.error('[Save]',e);
+    setFbStatus(false,'SYNC ERR');
+  }
+}
+
+// ── EXPOSE TO GLOBAL ──
+window.saveState = saveState;
+
+// ── LOCAL TICK — epoch-based, anti-jitter ──
+// Simpan detik terakhir yang sudah diproses per PS
+window._lastTickSec = {};
+window._lossStartMs = {}; // untuk LOSS mode tracking
+
+let _lastTickMs = Date.now();
+
+function _doTick(){
+  const nowMs = Date.now();
+  const countdownUpdates = {};
+
+  for(let i=1;i<=PS_COUNT;i++){
+    const s = window.psState[i];
+
+    if(s.loss_mode && s.running){
+      // LOSS mode: hitung berdasarkan elapsed sejak mulai
+      if(!window._lossStartMs[i]) window._lossStartMs[i] = nowMs;
+      const elapsedSecs = Math.floor((nowMs - window._lossStartMs[i]) / 1000);
+      s.seconds_left = elapsedSecs;
+      refreshCard(i);
+
+    } else if(s.running && (s.seconds_left > 0 || s.end_epoch_ms)){
+      // COUNTDOWN mode: pakai end_epoch_ms kalau ada (akurat)
+      if(s.end_epoch_ms){
+        const realSecs = Math.max(0, Math.round((s.end_epoch_ms - nowMs) / 1000));
+        const prevSecs = s.seconds_left;
+        s.seconds_left = realSecs;
+
+        // Deteksi moment tepat detik berubah (anti-jitter)
+        const prevSecInt = Math.ceil(prevSecs);
+        const nowSecInt  = Math.ceil(realSecs);
+        const secChanged = (nowSecInt !== prevSecInt);
+
+        if(secChanged) refreshCard(i);
+
+        if(realSecs === 0 && prevSecs > 0){
+          s.running = false;
+          s.end_epoch_ms = null;
+          logNotif(`PS ${String(i).padStart(2,'0')}`,'⏰ Waktu habis!');
+          refreshCard(i);
+        }
+      } else {
+        // Fallback: detik biasa
+        const secsFloor = Math.floor((nowMs - _lastTickMs) / 1000);
+        if(secsFloor >= 1){
+          s.seconds_left = Math.max(0, s.seconds_left - 1);
+          refreshCard(i);
+          if(s.seconds_left === 0){
+            s.running = false;
+            logNotif(`PS ${String(i).padStart(2,'0')}`,'⏰ Waktu habis!');
+            refreshCard(i);
+          }
+        }
+      }
+      window._lossStartMs[i] = null; // reset loss tracker
+
+    } else if(s.running && s.seconds_left===0 && !s.loss_mode){
+      // PS nyala tanpa timer — anti curang countdown
+      window._lossStartMs[i] = null;
+      if(window.antiCurangOn){
+        if(s._noTimerCountdown == null) s._noTimerCountdown = 60;
+        else if(nowMs - (_lastTickMs) >= 900) s._noTimerCountdown--;
+
+        countdownUpdates[String(i)] = s._noTimerCountdown;
+
+        if(s._noTimerCountdown <= 0){
+          s.running = false;
+          s._noTimerCountdown = null;
+          logNotif(`PS ${String(i).padStart(2,'0')}`,'🚫 Anti Curang: PS dimatikan!');
+          showToast(`🚫 PS ${String(i).padStart(2,'0')} dimatikan (Anti Curang)`);
+          if(window.fbDb){
+            import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+              const shutdownReq = {};
+              shutdownReq[String(i)] = new Date().toISOString();
+              updateDoc(doc(window.fbDb,'billing_state','current'),{
+                off_request: shutdownReq,
+                shutdown_request: shutdownReq,
+                source:'mobile'
+              }).catch(e=>console.error(e));
+            });
+          }
+          saveState();
+        }
+        refreshCard(i);
+      } else {
+        if(s._noTimerCountdown != null){
+          s._noTimerCountdown = null;
+          countdownUpdates[String(i)] = null;
+        }
+      }
+    } else {
+      window._lossStartMs[i] = null;
+      if(s._noTimerCountdown != null){
+        s._noTimerCountdown = null;
+        countdownUpdates[String(i)] = null;
+      }
+    }
+  }
+
+  // Sync countdown ke Firebase (batch)
+  if(window.fbDb && Object.keys(countdownUpdates).length > 0){
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+      const updates = {};
+      for(const [psNum, val] of Object.entries(countdownUpdates)){
+        updates[`no_timer_countdown.${psNum}`] = val;
+      }
+      updateDoc(doc(window.fbDb,'billing_state','current'), updates).catch(e=>{});
+    });
+  }
+
+  _lastTickMs = nowMs;
+  updateStatBar();
+  updateNextAlert();
+  if(window.selectedPS) updateSheetTimer(window.selectedPS);
+}
+
+// rAF-based tick: jalankan setiap ~100ms untuk detik yang smooth
+// tapi hanya proses logik tiap 1 detik berdasarkan epoch
+let _rafLastProcess = 0;
+function _rafTick(ts){
+  requestAnimationFrame(_rafTick);
+  if(ts - _rafLastProcess >= 200){ // check tiap 200ms, cukup smooth
+    _rafLastProcess = ts;
+    _doTick();
+  }
+}
+requestAnimationFrame(_rafTick);
+
+window.hideLoading = ()=>{
+  const o=document.getElementById('loadingOverlay');
+  o.style.opacity='0';
+  setTimeout(()=>o.style.display='none',500);
+};
+setTimeout(window.hideLoading,1800);
+
+// ── EXPOSE needed fns ──
+window.applyStateDict = applyStateDict;
+window.logNotif = logNotif;
+
+</script>
+
+<script>
+// ── PRICE DATA ──
+const HARGA_PS_1_5 = {1000:10*60,2000:30*60,3000:50*60,3500:60*60,4000:70*60,5000:80*60,6000:100*60,7000:120*60,8000:140*60,9000:160*60,10000:180*60};
+const HARGA_PS_6_15= {3000:30*60,5000:60*60,7000:80*60,8000:90*60,9000:100*60,10000:120*60,14000:180*60};
+const PS_COUNT=15, BASE_IP=31;
+function getHargaTable(n){return(n>=1&&n<=5)?HARGA_PS_1_5:HARGA_PS_6_15;}
+function getPsIp(n){return`192.168.0.${BASE_IP+n-1}`;}
+function fmtSecs(s){if(s<0)s=0;let h=Math.floor(s/3600),r=s%3600,m=Math.floor(r/60),sc=r%60;return`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;}
+function fmtRp(v){if(v>=1000000)return`Rp${(v/1000000).toFixed(1)}Jt`;if(v>=1000)return`Rp${Math.floor(v/1000)}K`;return`Rp${v}`;}
+
+// ── CLOCK ──
+function updateClock(){
+  const n=new Date();
+  const t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')+':'+String(n.getSeconds()).padStart(2,'0');
+  document.getElementById('clockBadge').textContent=t;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ── ANTI CURANG ──
+window.antiCurangOn = true;  // AUTO-ON saat startup
+function toggleAntiCurang(){
+  window.antiCurangOn = !window.antiCurangOn;
+  const btn = document.getElementById('antiCurangBtn');
+  const lbl = document.getElementById('antiCurangLabel');
+  if(window.antiCurangOn){
+    btn.classList.add('active');
+    lbl.textContent = 'ANTI CURANG: ON';
+    showToast('🚫 Anti Curang AKTIF — PS tanpa timer akan mati dalam 60s');
+  } else {
+    btn.classList.remove('active');
+    lbl.textContent = 'ANTI CURANG';
+    for(let i=1;i<=PS_COUNT;i++){
+      if(window.psState && window.psState[i]){
+        window.psState[i]._noTimerCountdown = null;
+        window.psState[i]._syncedCountdown = null;
+      }
+      const el = document.getElementById(`notimer-${i}`);
+      if(el) el.textContent = '';
+      const sdStrip = document.getElementById(`sdstrip-${i}`);
+      if(sdStrip) sdStrip.classList.remove('active');
+      refreshCard(i);
+    }
+    showToast('✅ Anti Curang dinonaktifkan');
+    // Bersihkan no_timer_countdown di Firebase
+    if(window.fbDb){
+      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+        const clearUpdates = {};
+        for(let i=1;i<=PS_COUNT;i++) clearUpdates[`no_timer_countdown.${i}`] = null;
+        updateDoc(doc(window.fbDb,'billing_state','current'), clearUpdates).catch(e=>{});
+      });
+    }
+  }
+  // Sync ke Firebase agar PC ikut
+  if(window.fbDb){
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+      updateDoc(doc(window.fbDb,'billing_state','current'),{anti_curang: window.antiCurangOn})
+        .catch(e=>console.error(e));
+    });
+  }
+}
+
+// ── BUILD GRID ──
+function buildGrid(){
+  const grid=document.getElementById('psGrid');
+  for(let i=1;i<=PS_COUNT;i++){
+    const card=document.createElement('div');
+    card.className='ps-card';
+    card.id=`card-${i}`;
+    card.setAttribute('data-ps', String(i));
+    card.style.animationDelay = ((i-1)*0.18)+'s';
+    card.innerHTML=`
+      <div class="ps-header">
+        <div class="ps-num">PS ${String(i).padStart(2,'0')}</div>
+        <div class="ps-badge" id="badge-${i}">● OFF</div>
+      </div>
+      <div class="ps-glow-bar"></div>
+      <div class="ps-suhu-strip s-na" id="suhustrip-${i}">
+        <span class="v-cpu" id="cpu-${i}">CPU --°</span>
+        <span class="v-rsx" id="rsx-${i}">RSX --°</span>
+        <span class="v-fan" id="fan-${i}">🌀--%</span>
+      </div>
+      <div class="ps-timer" id="timer-${i}">00:00:00</div>
+      <div class="ps-game-strip" id="game-${i}">
+        <span class="game-line1">🎮 Standby</span>
+        <span class="game-line2"></span>
+      </div>
+      <div class="shutdown-strip" id="sdstrip-${i}">
+        <div class="shutdown-bar-fill" id="sdbar-${i}" style="width:100%"></div>
+        <div class="shutdown-bar-text" id="sdtxt-${i}">⚡ MATI 60s</div>
+      </div>
+      <div class="ps-bottom-deco">
+        <div class="ps-deco-dot"></div>
+        <div class="ps-deco-line"></div>
+        <div class="ps-deco-icon"></div>
+        <div class="ps-deco-line"></div>
+        <div class="ps-deco-dot" style="animation-delay:0.4s"></div>
+        <div class="ps-deco-line"></div>
+        <div class="ps-deco-dot" style="animation-delay:0.8s"></div>
+      </div>
+      <div class="ps-income" id="income-${i}"></div>
+      <div class="no-timer-warn" id="notimer-${i}"></div>
+    `;
+    card.onclick=()=>openSheet(i);
+    grid.appendChild(card);
+  }
+  // Populate custom time target select
+  const sel=document.getElementById('ctTarget');
+  for(let i=1;i<=PS_COUNT;i++){
+    const opt=document.createElement('option');
+    opt.value=String(i);
+    opt.textContent=`PS ${String(i).padStart(2,'0')}`;
+    sel.appendChild(opt);
+  }
+}
+
+function refreshCard(n){
+  if(!window.psState) return;
+  const s=window.psState[n];
+  const card=document.getElementById(`card-${n}`);
+  const timer=document.getElementById(`timer-${n}`);
+  const badge=document.getElementById(`badge-${n}`);
+  const income=document.getElementById(`income-${n}`);
+  const noTimerEl=document.getElementById(`notimer-${n}`);
+  const sdStrip=document.getElementById(`sdstrip-${n}`);
+  const sdBar=document.getElementById(`sdbar-${n}`);
+  const sdTxt=document.getElementById(`sdtxt-${n}`);
+  if(!card) return;
+  const secs=s.seconds_left;
+  timer.textContent=fmtSecs(secs);
+  income.textContent=s.total_pendapatan?fmtRp(s.total_pendapatan):'';
+  // No-timer warning display
+  // HP: PS detected dari PC (beda jaringan) — tampilkan kedip + countdown
+  const isDetected = s.detected === true;
+  const isNoTimer = (s.running && secs===0 && !s.loss_mode) || isDetected;
+  const cdVal = (s._noTimerCountdown != null) ? s._noTimerCountdown : (s._syncedCountdown != null ? s._syncedCountdown : null);
+
+  // Shutdown strip (countdown bar)
+  if(sdStrip && sdBar && sdTxt){
+    if(isNoTimer && window.antiCurangOn && cdVal != null){
+      sdStrip.classList.add('active');
+      const pct = Math.max(0,Math.min(100, (cdVal/60)*100));
+      sdBar.style.width = pct + '%';
+      sdTxt.textContent = `⚡ MATI ${cdVal}s`;
+    } else {
+      sdStrip.classList.remove('active');
+      sdBar.style.width = '100%';
+      sdTxt.textContent = '⚡ MATI 60s';
+    }
+  }
+
+  if(noTimerEl){
+    // no-timer-warn element kept for legacy, now we use strip above
+    noTimerEl.textContent='';
+  }
+  // Remove all status classes
+  card.className='ps-card';
+  card.setAttribute('data-ps', String(n));
+  timer.className='ps-timer';
+  badge.className='ps-badge';
+  if(s.loss_mode){
+    card.classList.add('status-loss');
+    timer.classList.add('loss'); badge.classList.add('loss');
+    badge.textContent='● LOSS';
+  } else if(isNoTimer && window.antiCurangOn){
+    card.classList.add('status-warn');
+    card.classList.add('card-detected');
+    timer.classList.add('warn'); badge.classList.add('notimer');
+    badge.textContent= isDetected ? '⚡ DETECT' : '⚠ NO TIMER';
+  } else if(s.running&&secs>0&&secs<=300){
+    card.classList.add('status-warn');
+    timer.classList.add('warn'); badge.classList.add('warn');
+    badge.textContent='⚠ WARN';
+  } else if(s.running||secs>0){
+    card.classList.remove('card-detected');
+    card.classList.add('status-on');
+    timer.classList.add('on'); badge.classList.add('on');
+    badge.textContent='● ON';
+  } else {
+    badge.textContent='● OFF';
+  }
+}
+
+// ── SUHU/FAN/GAME — nempel langsung di tiap ps-card ──
+function updateSuhuStrip(n){
+  if(!window.psState) return;
+  const t = window.psState[n].temps || {};
+  const strip=document.getElementById(`suhustrip-${n}`);
+  const cpuEl=document.getElementById(`cpu-${n}`);
+  const rsxEl=document.getElementById(`rsx-${n}`);
+  const fanEl=document.getElementById(`fan-${n}`);
+  const gameEl=document.getElementById(`game-${n}`);
+  if(!strip) return;
+
+  cpuEl.textContent = `CPU ${t.cpu!=null ? t.cpu+'°' : '--°'}`;
+  rsxEl.textContent = `RSX ${t.rsx!=null ? t.rsx+'°' : '--°'}`;
+  fanEl.textContent = `🌀${t.fan!=null ? t.fan+'%' : '--%'}`;
+
+  const statusMap = { 'AMAN':'s-aman', 'WASPADA':'s-waspada', 'BAHAYA':'s-bahaya' };
+  strip.className = `ps-suhu-strip ${statusMap[t.status] || 's-na'}`;
+
+  if(gameEl){
+    const line1El = gameEl.querySelector('.game-line1');
+    const line2El = gameEl.querySelector('.game-line2');
+    if(t.game){
+      gameEl.classList.add('active');
+      // Smart split: potong di tengah berdasarkan kata
+      const raw = t.game;
+      const words = raw.split(' ');
+      let l1 = '', l2 = '';
+      if(words.length <= 2){
+        l1 = '🎮 ' + raw;
+        l2 = '';
+      } else {
+        // Potong kira-kira di tengah karakter
+        const mid = Math.ceil(raw.length / 2);
+        let cutAt = 0;
+        let runLen = 0;
+        for(let wi = 0; wi < words.length; wi++){
+          runLen += words[wi].length + (wi > 0 ? 1 : 0);
+          if(runLen >= mid){ cutAt = wi + 1; break; }
+        }
+        if(cutAt <= 0) cutAt = Math.ceil(words.length / 2);
+        l1 = '🎮 ' + words.slice(0, cutAt).join(' ');
+        l2 = words.slice(cutAt).join(' ').toUpperCase();
+      }
+      if(line1El) line1El.textContent = l1;
+      if(line2El) line2El.textContent = l2;
+    } else {
+      gameEl.classList.remove('active');
+      if(line1El) line1El.textContent = '🎮 Standby';
+      if(line2El) line2El.textContent = '';
+    }
+  }
+}
+
+function updateStatBar(){
+  if(!window.psState) return;
+  let aktif=0;
+  for(let i=1;i<=PS_COUNT;i++){
+    const s=window.psState[i];
+    if(s.running||s.loss_mode) aktif++;
+  }
+  document.getElementById('statAktif').textContent=`${aktif}/${PS_COUNT}`;
+  document.getElementById('statPendapatan').textContent=fmtRp(window.totalPendapatan||0);
+  document.getElementById('statTransaksi').textContent=String(window.totalTransaksi||0);
+  let best=null,bestTx=0;
+  for(let i=1;i<=PS_COUNT;i++){
+    const s=window.psState[i];
+    if(s.transactions>bestTx){bestTx=s.transactions;best=i;}
+  }
+  document.getElementById('statPsLaku').textContent=best?`PS ${String(best).padStart(2,'0')}`:'—';
+}
+
+function updateNextAlert(){
+  if(!window.psState) return;
+  let bestN=0,bestS=999999;
+  for(let i=1;i<=PS_COUNT;i++){
+    const s=window.psState[i];
+    if(s.running&&!s.loss_mode&&s.seconds_left>0&&s.seconds_left<bestS){
+      bestS=s.seconds_left; bestN=i;
+    }
+  }
+  const el=document.getElementById('statNextAlert');
+  if(bestN){
+    el.textContent=fmtSecs(bestS);
+    el.style.color=bestS<=300?'var(--nova)':'var(--solar)';
+  } else {
+    el.textContent='--:--:--';
+    el.style.color='var(--cyan)';
+  }
+}
+
+// ── SHEET ──
+function openSheet(n){
+  window.selectedPS=n;
+  window.numpadVal='';
+  document.getElementById('numpadDisplay').textContent='0';
+  document.getElementById('numpadPreview').textContent='';
+  // Close manual/pesan
+  document.getElementById('manualSection').classList.remove('open');
+  document.getElementById('pesanSection').classList.remove('open');
+  // Fill sheet
+  document.getElementById('sheetTitle').textContent=`PS ${String(n).padStart(2,'0')}`;
+  document.getElementById('sheetSubtitle').textContent=getPsIp(n);
+  const vip=n>=6&&n<=15;
+  document.getElementById('priceSectionTitle').textContent=`HARGA PS ${String(n).padStart(2,'0')} (${vip?'VIP':'REGULER'})`;
+  buildPriceGrid(n);
+  updateSheet(n);
+  document.getElementById('sheetOverlay').classList.add('open');
+  requestAnimationFrame(()=>document.getElementById('bottomSheet').classList.add('open'));
+}
+
+function updateSheet(n){
+  if(!window.psState) return;
+  const s=window.psState[n];
+  updateSheetTimer(n);
+  document.getElementById('sheetIncome').textContent=s.total_pendapatan?fmtRp(s.total_pendapatan):'';
+  // Loss button
+  const btnLoss=document.getElementById('btnLoss');
+  if(s.loss_mode){btnLoss.textContent='⏹ STOP LOSS';btnLoss.classList.add('btn-active');}
+  else{btnLoss.textContent='⏩ LOSS';btnLoss.classList.remove('btn-active');}
+  // Adzan button
+  const btnAdzan=document.getElementById('btnAdzan');
+  btnAdzan.textContent=s.alert_on?'🔕 ADZAN ON':'🕌 ADZAN';
+  if(s.alert_on)btnAdzan.classList.add('btn-active');
+  else btnAdzan.classList.remove('btn-active');
+}
+
+function updateSheetTimer(n){
+  if(!window.psState) return;
+  const s=window.psState[n];
+  const el=document.getElementById('sheetTimer');
+  el.textContent=fmtSecs(s.seconds_left);
+  el.className='sheet-timer-big';
+  if(s.loss_mode) el.classList.add('loss');
+  else if(s.running&&s.seconds_left>0&&s.seconds_left<=300) el.classList.add('warn');
+  else if(s.running||s.seconds_left>0) {}
+  else el.classList.add('off');
+}
+
+function closeSheet(){
+  document.getElementById('bottomSheet').classList.remove('open');
+  document.getElementById('sheetOverlay').classList.remove('open');
+  window.selectedPS=null;
+}
+
+function buildPriceGrid(n){
+  const grid=document.getElementById('priceGrid');
+  grid.innerHTML='';
+  const tbl=getHargaTable(n);
+  const prices=Object.keys(tbl).map(Number).sort((a,b)=>a-b);
+  prices.forEach(price=>{
+    const secs=tbl[price];
+    const h=Math.floor(secs/3600),rm=secs%3600,m=Math.floor(rm/60);
+    const lbl_t=h>0?(m>0?`${h}j${String(m).padStart(2,'0')}`:`${h}j`):`${m}m`;
+    const lbl_p=`${price/1000}K`;
+    let tier='';
+    if(price<=3000)tier='';
+    else if(price<=6000)tier='tier-mid';
+    else if(price<=9000)tier='tier-high';
+    else tier='tier-vip';
+    const btn=document.createElement('button');
+    btn.className=`price-btn ${tier}`;
+    btn.innerHTML=`<span class="p-rp">${lbl_p}</span><span class="p-time">${lbl_t}</span>`;
+    btn.onclick=()=>addByPrice(n,price);
+    grid.appendChild(btn);
+  });
+}
+
+// ── ACTIONS ──
+function addByPrice(n,price){
+  const tbl=getHargaTable(n);
+  const secs=tbl[price];
+  if(!secs){showToast('❌ Harga tidak ada di daftar');return;}
+  const s=window.psState[n];
+  s.seconds_left+=secs;
+  s.total_added+=secs;
+  s.total_pendapatan+=price;
+  s.transactions++;
+  s.running=true; s.loss_mode=false; s.warned_5min=false;
+  // Update end_epoch_ms: waktu sekarang + sisa detik baru
+  s.end_epoch_ms = Date.now() + (s.seconds_left * 1000);
+  window.totalPendapatan+=price;
+  window.totalTransaksi++;
+  logNotif(`PS ${String(n).padStart(2,'0')}`,`Tambah Rp${price/1000}K → +${Math.floor(secs/60)}m`);
+  refreshCard(n); updateSheet(n); updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  showToast(`✅ PS ${String(n).padStart(2,'0')} +${Math.floor(secs/60)} Menit`);
+}
+
+function sheetAdzan(){
+  const n=window.selectedPS; if(!n) return;
+  if(!confirm(`Putar teguran (negur) untuk PS ${String(n).padStart(2,'0')}?`)) return;
+  // HP hanya kirim perintah ke PC — PC yang putar WAV negur
+  if(window.fbDb){
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+      const req={};
+      req[String(n)]=new Date().toISOString();
+      updateDoc(doc(window.fbDb,'billing_state','current'),{adzan_request:req})
+        .catch(e=>console.error(e));
+    });
+  }
+  SFX.adzanOn();
+  logNotif(`PS ${String(n).padStart(2,'0')}`,'🕌 Adzan: perintah dikirim ke PC');
+  showToast(`🕌 Adzan dikirim ke PC — PS ${String(n).padStart(2,'0')}`);
+}
+
+function sheetLoss(){
+  const n=window.selectedPS; if(!n) return;
+  const s=window.psState[n];
+  s.loss_mode=!s.loss_mode;
+  if(s.loss_mode){s.running=true;}
+  else{s.running=false;}
+  refreshCard(n); updateSheet(n); updateStatBar();
+  if(window.saveState) window.saveState();
+  logNotif(`PS ${String(n).padStart(2,'0')}`,s.loss_mode?'⏩ Mode LOSS aktif':'⏹ LOSS dimatikan');
+  showToast(s.loss_mode?`⏩ LOSS ON — PS ${String(n).padStart(2,'0')}`:`⏹ LOSS OFF — PS ${String(n).padStart(2,'0')}`);
+}
+
+function sheetDarurat(){
+  const n=window.selectedPS; if(!n) return;
+  const s=window.psState[n];
+  s.seconds_left+=6*60;
+  s.running=true; s.loss_mode=false; s.warned_5min=false;
+  s.end_epoch_ms = Date.now() + (s.seconds_left * 1000);
+  refreshCard(n); updateSheet(n); updateNextAlert();
+  if(window.saveState) window.saveState();
+  logNotif(`PS ${String(n).padStart(2,'0')}`,'⚡ Darurat +5 Menit');
+  showToast(`⚡ PS ${String(n).padStart(2,'0')} +5 Menit Darurat`);
+}
+
+function sheetOff(){
+  const n=window.selectedPS; if(!n) return;
+  if(!confirm(`Matikan PS ${String(n).padStart(2,'0')}?`)) return;
+  const s=window.psState[n];
+  s.seconds_left=0; s.running=false; s.loss_mode=false; s.warned_5min=false;
+  s.total_added=0; s.end_epoch_ms=null;
+  refreshCard(n); updateSheet(n); updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  // Kirim off_request ke Firebase agar PC proses HTTP shutdown ke PS fisik
+  if(window.fbDb){
+    const req={};
+    req[String(n)]=new Date().toISOString();
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+      updateDoc(doc(window.fbDb,'billing_state','current'),{off_request:req})
+        .catch(e=>console.error('[off_request]',e));
+    });
+  }
+  logNotif(`PS ${String(n).padStart(2,'0')}`,'⏻ Dimatikan dari HP');
+  showToast(`⏻ PS ${String(n).padStart(2,'0')} OFF`);
+}
+
+function sheetReset(){
+  const n=window.selectedPS; if(!n) return;
+  if(!confirm(`Reset timer PS ${String(n).padStart(2,'0')}?`)) return;
+  const s=window.psState[n];
+  s.seconds_left=0; s.running=false; s.loss_mode=false; s.total_added=0; s.warned_5min=false;
+  s.end_epoch_ms=null;
+  refreshCard(n); updateSheet(n); updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  logNotif(`PS ${String(n).padStart(2,'0')}`,'↺ Timer di-reset dari HP');
+  showToast(`↺ PS ${String(n).padStart(2,'0')} Reset`);
+}
+
+function toggleManual(){
+  const el=document.getElementById('manualSection');
+  el.classList.toggle('open');
+  document.getElementById('pesanSection').classList.remove('open');
+}
+
+function togglePesan(){
+  const el=document.getElementById('pesanSection');
+  el.classList.toggle('open');
+  document.getElementById('manualSection').classList.remove('open');
+}
+
+// ── NUMPAD ──
+function numKey(v){
+  window.numpadVal=(window.numpadVal+v).replace(/^0+/,'').slice(0,7)||'0';
+  document.getElementById('numpadDisplay').textContent=parseInt(window.numpadVal||0).toLocaleString('id-ID');
+  numpadPreview();
+}
+function numDel(){
+  window.numpadVal=window.numpadVal.slice(0,-1)||'';
+  document.getElementById('numpadDisplay').textContent=parseInt(window.numpadVal||0).toLocaleString('id-ID')||'0';
+  numpadPreview();
+}
+function numpadPreview(){
+  const n=window.selectedPS; if(!n) return;
+  const price=parseInt(window.numpadVal||0);
+  const tbl=getHargaTable(n);
+  const secs=tbl[price];
+  if(secs){
+    const h=Math.floor(secs/3600),rm=secs%3600,m=Math.floor(rm/60);
+    const t=h>0?`${h} jam ${m} mnt`:` ${m} menit`;
+    document.getElementById('numpadPreview').textContent=`✅ Rp${price.toLocaleString('id-ID')} → ${t}`;
+    document.getElementById('numpadPreview').style.color='var(--aurora)';
+  } else if(price>0){
+    document.getElementById('numpadPreview').textContent='❌ Harga tidak ada di daftar';
+    document.getElementById('numpadPreview').style.color='var(--nova)';
+  } else {
+    document.getElementById('numpadPreview').textContent='';
+  }
+}
+function numApply(){
+  const n=window.selectedPS; if(!n) return;
+  const price=parseInt(window.numpadVal||0);
+  if(!price){showToast('❌ Masukkan nominal harga');return;}
+  addByPrice(n,price);
+  window.numpadVal='';
+  document.getElementById('numpadDisplay').textContent='0';
+  document.getElementById('numpadPreview').textContent='';
+}
+
+// ── MANUAL TIME ──
+function applyManualTime(){
+  const n=window.selectedPS; if(!n) return;
+  const h=parseInt(document.getElementById('manH').value)||0;
+  const m=parseInt(document.getElementById('manM').value)||0;
+  const sc=parseInt(document.getElementById('manS').value)||0;
+  const total=h*3600+m*60+sc;
+  if(!total){showToast('❌ Masukkan waktu!');return;}
+  const s=window.psState[n];
+  s.seconds_left+=total;
+  s.total_added+=total;
+  s.running=true; s.loss_mode=false; s.warned_5min=false;
+  s.end_epoch_ms = Date.now() + (s.seconds_left * 1000);
+  refreshCard(n); updateSheet(n); updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  logNotif(`PS ${String(n).padStart(2,'0')}`,`Manual: +${h}j${String(m).padStart(2,'0')}m${String(sc).padStart(2,'0')}d`);
+  showToast(`⏱ PS ${String(n).padStart(2,'0')} +${h}j${m}m`);
+}
+
+// ── PESAN ──
+function sheetPesanTemplate(msg){
+  sendPesanToPS(window.selectedPS, msg);
+}
+function sheetPesanCustom(){
+  const msg=document.getElementById('pesanInput').value.trim();
+  if(!msg){showToast('❌ Pesan kosong!');return;}
+  sendPesanToPS(window.selectedPS, msg);
+  document.getElementById('pesanInput').value='';
+}
+function sendPesanToPS(n,msg){
+  if(!n) return;
+  if(window.fbDb){
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,arrayUnion,doc})=>{
+      updateDoc(doc(window.fbDb,'billing_state','current'),{
+        pesan_request: arrayUnion({ps:n,msg:msg,ts:new Date().toISOString()}),
+        source: 'mobile'
+      }).catch(e=>console.error(e));
+    });
+  }
+  logNotif(`PS ${String(n).padStart(2,'0')}`,`📱 Pesan: "${msg.slice(0,25)}"`);
+  showToast(`✉ Pesan dikirim ke PS ${String(n).padStart(2,'0')}`);
+}
+
+// ── QUICK ACTIONS ──
+function quickResetAll(){
+  if(!confirm('Reset SEMUA timer?')) return;
+  for(let i=1;i<=PS_COUNT;i++){
+    const s=window.psState[i];
+    s.seconds_left=0; s.running=false; s.loss_mode=false; s.total_added=0; s.warned_5min=false;
+    s.end_epoch_ms=null;
+    refreshCard(i);
+  }
+  updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  logNotif('GLOBAL','↺ Semua PS di-reset dari HP');
+  showToast('↺ Semua timer di-reset!');
+}
+
+function quickOffAll(){
+  if(!confirm('Matikan SEMUA PS?')) return;
+  for(let i=1;i<=PS_COUNT;i++){
+    const s=window.psState[i];
+    s.seconds_left=0; s.running=false; s.loss_mode=false; s.warned_5min=false; s.total_added=0;
+    refreshCard(i);
+  }
+  updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  logNotif('GLOBAL','⏻ Semua PS dimatikan dari HP');
+  showToast('⏻ Semua PS dimatikan!');
+}
+
+function quickPesanGlobal(){
+  const msg=prompt('Pesan untuk semua PS:');
+  if(!msg||!msg.trim()) return;
+  sendGlobalMsg(msg.trim());
+}
+
+function sendGlobalMsg(msg){
+  if(!msg) return;
+  if(window.fbDb){
+    const reqs=[];
+    for(let i=1;i<=PS_COUNT;i++) reqs.push({ps:i,msg:msg,ts:new Date().toISOString()});
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js").then(({updateDoc,doc})=>{
+      updateDoc(doc(window.fbDb,'billing_state','current'),{pesan_request:reqs, source:'mobile'}).catch(e=>console.error(e));
+    });
+  }
+  logNotif('GLOBAL',`✉ ${msg.slice(0,30)}`);
+  showToast('✉ Pesan global dikirim!');
+}
+
+function sendGlobalMsgCustom(){
+  const msg=document.getElementById('globalMsgInput').value.trim();
+  if(!msg){showToast('❌ Pesan kosong!');return;}
+  sendGlobalMsg(msg);
+  document.getElementById('globalMsgInput').value='';
+}
+
+// ── CUSTOM TIME ──
+function toggleCustomTime(){
+  document.getElementById('customTimePanel').classList.toggle('open');
+}
+function applyCustomTime(){
+  const targetVal=document.getElementById('ctTarget').value;
+  const h=parseInt(document.getElementById('ctH').value)||0;
+  const m=parseInt(document.getElementById('ctM').value)||0;
+  const sc=parseInt(document.getElementById('ctS').value)||0;
+  const total=h*3600+m*60+sc;
+  if(!total){showToast('❌ Masukkan waktu!');return;}
+  let targets=[];
+  if(targetVal==='SEMUA'){for(let i=1;i<=PS_COUNT;i++)targets.push(i);}
+  else targets=[parseInt(targetVal)];
+  targets.forEach(n=>{
+    const s=window.psState[n];
+    s.seconds_left+=total; s.total_added+=total;
+    s.running=true; s.loss_mode=false; s.warned_5min=false;
+    s.end_epoch_ms = Date.now() + (s.seconds_left * 1000);
+    refreshCard(n);
+  });
+  updateStatBar(); updateNextAlert();
+  if(window.saveState) window.saveState();
+  const label=targetVal==='SEMUA'?'SEMUA PS':`PS ${String(parseInt(targetVal)).padStart(2,'0')}`;
+  logNotif(label,`⏱ Custom Time: +${h}j${m}m`);
+  showToast(`⏱ Custom Time diterapkan ke ${label}`);
+}
+
+// ── TABS ──
+function switchTab(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── NOTIF ──
+function logNotif(ps,msg){
+  if(typeof window.logNotif==='function'&&window.logNotif!==logNotif){
+    // already hooked from module, skip double
+  }
+  const now=new Date();
+  const t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  if(!window.notifLog) window.notifLog=[];
+  window.notifLog.unshift({t,ps,msg});
+  if(window.notifLog.length>50) window.notifLog.pop();
+  renderNotif();
+}
+// override global
+window.logNotif=logNotif;
+
+function renderNotif(){
+  const list=document.getElementById('notifList');
+  if(!window.notifLog||!window.notifLog.length){
+    list.innerHTML='<div class="notif-empty">Belum ada notifikasi</div>';
+    return;
+  }
+  list.innerHTML='';
+  window.notifLog.slice(0,30).forEach(n=>{
+    const item=document.createElement('div');
+    item.className='notif-item';
+    item.innerHTML=`<div class="notif-time">${n.t}</div><div class="notif-ps">${n.ps}</div><div class="notif-msg">${n.msg}</div>`;
+    list.appendChild(item);
+  });
+}
+
+// ── TOAST ──
+let toastTimeout;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── INIT ──
+buildGrid();
+// Set tampilan Anti Curang button sesuai state awal (ON)
+(function(){
+  const btn = document.getElementById('antiCurangBtn');
+  const lbl = document.getElementById('antiCurangLabel');
+  if(window.antiCurangOn && btn){
+    btn.classList.add('active');
+    lbl.textContent = 'ANTI CURANG: ON';
+  }
+})();
+
+// If Firebase state already loaded before this script ran
+setTimeout(()=>{
+  if(window.psState){
+    for(let i=1;i<=PS_COUNT;i++){ refreshCard(i); updateSuhuStrip(i); }
+    updateStatBar(); updateNextAlert();
+  }
+  document.getElementById('loadingOverlay').style.opacity='0';
+  setTimeout(()=>document.getElementById('loadingOverlay').style.display='none',500);
+},2000);
+</script>
+
+<script>
+// ══════════════════════════════════════════════
+//  BIGHERO SOUND ENGINE — Web Audio API
+// ══════════════════════════════════════════════
+const BH_SOUND = (() => {
+  let ctx = null;
+  let unlocked = false;
+
+  function getCtx() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    return ctx;
+  }
+
+  function unlock() {
+    if (unlocked) return;
+    try {
+      const c = getCtx();
+      if (c.state === 'suspended') c.resume();
+      // Play silent buffer to unlock iOS
+      const buf = c.createBuffer(1, 1, 22050);
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(c.destination);
+      src.start(0);
+      unlocked = true;
+    } catch(e) {}
+  }
+
+  // Beep generator
+  function beep({ freq = 440, type = 'sine', vol = 0.4, dur = 0.12, attack = 0.005, decay = 0.08, freqEnd }) {
+    try {
+      const c = getCtx();
+      if (c.state === 'suspended') c.resume();
+      const t = c.currentTime;
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.connect(gain);
+      gain.connect(c.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, t + dur);
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(vol, t + attack);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      osc.start(t);
+      osc.stop(t + dur + 0.02);
+    } catch(e) {}
+  }
+
+  // Multi-tone chord
+  function chord(notes, delay = 0.06) {
+    notes.forEach((n, i) => {
+      setTimeout(() => beep(n), i * delay * 1000);
+    });
+  }
+
+  // Synthesized sounds
+  const sounds = {
+    // Klik tombol biasa — short snappy click
+    click() {
+      beep({ freq: 880, type: 'square', vol: 0.15, dur: 0.04 });
+    },
+
+    // PS card tap — sci-fi blip
+    cardTap() {
+      beep({ freq: 660, type: 'sine', vol: 0.3, dur: 0.08, freqEnd: 880 });
+      setTimeout(() => beep({ freq: 1100, type: 'sine', vol: 0.15, dur: 0.05 }), 70);
+    },
+
+    // Tambah waktu / price button — success chime
+    addTime() {
+      chord([
+        { freq: 523, type: 'sine', vol: 0.35, dur: 0.12 },
+        { freq: 659, type: 'sine', vol: 0.3,  dur: 0.15 },
+        { freq: 784, type: 'sine', vol: 0.35, dur: 0.18 },
+      ], 0.07);
+    },
+
+    // OFF PS — power down
+    off() {
+      beep({ freq: 440, type: 'sawtooth', vol: 0.25, dur: 0.2, freqEnd: 110 });
+    },
+
+    // RESET — swoosh
+    reset() {
+      beep({ freq: 300, type: 'sine', vol: 0.2, dur: 0.15, freqEnd: 600 });
+      setTimeout(() => beep({ freq: 600, type: 'sine', vol: 0.15, dur: 0.1, freqEnd: 300 }), 120);
+    },
+
+    // LOSS mode on — warning alarm
+    lossOn() {
+      [0, 120, 240].forEach(d =>
+        setTimeout(() => beep({ freq: 800, type: 'square', vol: 0.2, dur: 0.08 }), d)
+      );
+    },
+
+    // LOSS mode off — stop
+    lossOff() {
+      beep({ freq: 400, type: 'square', vol: 0.15, dur: 0.12, freqEnd: 200 });
+    },
+
+    // Darurat +5 menit — urgent blip
+    darurat() {
+      [0, 80, 160].forEach(d =>
+        setTimeout(() => beep({ freq: 1000, type: 'square', vol: 0.25, dur: 0.06, freqEnd: 1200 }), d)
+      );
+    },
+
+    // Numpad key press — tock
+    numKey() {
+      beep({ freq: 1200, type: 'square', vol: 0.12, dur: 0.035 });
+    },
+
+    // Numpad delete
+    numDel() {
+      beep({ freq: 500, type: 'square', vol: 0.1, dur: 0.05, freqEnd: 350 });
+    },
+
+    // Numpad apply / terapkan harga
+    numApply() {
+      chord([
+        { freq: 440, type: 'sine', vol: 0.3, dur: 0.1 },
+        { freq: 660, type: 'sine', vol: 0.3, dur: 0.15 },
+        { freq: 880, type: 'sine', vol: 0.35, dur: 0.2 },
+      ], 0.06);
+    },
+
+    // Sheet close — soft whoosh
+    sheetClose() {
+      beep({ freq: 440, type: 'sine', vol: 0.15, dur: 0.1, freqEnd: 220 });
+    },
+
+    // Adzan toggle on — bell
+    adzanOn() {
+      chord([
+        { freq: 698, type: 'sine', vol: 0.3, dur: 0.3 },
+        { freq: 880, type: 'sine', vol: 0.25, dur: 0.35 },
+        { freq: 1047, type: 'sine', vol: 0.2, dur: 0.4 },
+      ], 0.1);
+    },
+
+    // Kirim pesan
+    pesanSent() {
+      beep({ freq: 1000, type: 'sine', vol: 0.2, dur: 0.08 });
+      setTimeout(() => beep({ freq: 1200, type: 'sine', vol: 0.2, dur: 0.08 }), 90);
+    },
+
+    // Quick reset all — big sweep
+    resetAll() {
+      beep({ freq: 200, type: 'sawtooth', vol: 0.3, dur: 0.4, freqEnd: 50 });
+    },
+
+    // Off all
+    offAll() {
+      beep({ freq: 300, type: 'sawtooth', vol: 0.25, dur: 0.35, freqEnd: 80 });
+    },
+
+    // Manual time apply
+    manualApply() {
+      chord([
+        { freq: 392, type: 'sine', vol: 0.3, dur: 0.12 },
+        { freq: 523, type: 'sine', vol: 0.3, dur: 0.16 },
+        { freq: 659, type: 'sine', vol: 0.3, dur: 0.2 },
+      ], 0.08);
+    },
+
+    // Tab switch
+    tabSwitch() {
+      beep({ freq: 750, type: 'sine', vol: 0.12, dur: 0.06, freqEnd: 900 });
+    },
+
+    // Toast error
+    error() {
+      beep({ freq: 300, type: 'square', vol: 0.2, dur: 0.15 });
+      setTimeout(() => beep({ freq: 250, type: 'square', vol: 0.18, dur: 0.15 }), 140);
+    },
+
+    // Timer warning — pulsing warn
+    timerWarn() {
+      beep({ freq: 880, type: 'square', vol: 0.3, dur: 0.1 });
+      setTimeout(() => beep({ freq: 880, type: 'square', vol: 0.25, dur: 0.1 }), 200);
+    }
+  };
+
+  // Show sound wave visual for N ms
+  function flashWave(ms = 500) {
+    const w = document.getElementById('soundWave');
+    if (!w) return;
+    w.classList.add('active');
+    setTimeout(() => w.classList.remove('active'), ms);
+  }
+
+  return { unlock, sounds, flashWave };
+})();
+
+// ── Auto-unlock on first touch ──
+document.addEventListener('touchstart', () => BH_SOUND.unlock(), { once: true, passive: true });
+document.addEventListener('mousedown', () => BH_SOUND.unlock(), { once: true });
+
+// ── SOUND HOOK — wrap original functions ──
+(function patchSounds() {
+  const S = BH_SOUND.sounds;
+  const flash = BH_SOUND.flashWave.bind(BH_SOUND);
+
+  // Wait until DOM+scripts ready
+  const patch = () => {
+    // --- PS card open ---
+    const origOpenSheet = window.openSheet;
+    if (origOpenSheet) {
+      window.openSheet = function(n) {
+        S.cardTap(); flash(400);
+        return origOpenSheet.call(this, n);
+      };
+    }
+
+    // --- Close sheet ---
+    const origClose = window.closeSheet;
+    if (origClose) {
+      window.closeSheet = function() {
+        S.sheetClose();
+        return origClose.call(this);
+      };
+    }
+
+    // --- Add by price ---
+    const origAddByPrice = window.addByPrice;
+    if (origAddByPrice) {
+      window.addByPrice = function(n, price) {
+        S.addTime(); flash(600);
+        return origAddByPrice.call(this, n, price);
+      };
+    }
+
+    // --- Sheet OFF ---
+    const origOff = window.sheetOff;
+    if (origOff) {
+      window.sheetOff = function() {
+        S.off(); flash(400);
+        return origOff.call(this);
+      };
+    }
+
+    // --- Sheet Reset ---
+    const origReset = window.sheetReset;
+    if (origReset) {
+      window.sheetReset = function() {
+        S.reset(); flash(400);
+        return origReset.call(this);
+      };
+    }
+
+    // --- Sheet Loss ---
+    const origLoss = window.sheetLoss;
+    if (origLoss) {
+      window.sheetLoss = function() {
+        const n = window.selectedPS;
+        const lossMode = n && window.psState && window.psState[n] ? window.psState[n].loss_mode : false;
+        if (!lossMode) { S.lossOn(); flash(500); } else { S.lossOff(); flash(300); }
+        return origLoss.call(this);
+      };
+    }
+
+    // --- Darurat ---
+    const origDarurat = window.sheetDarurat;
+    if (origDarurat) {
+      window.sheetDarurat = function() {
+        S.darurat(); flash(500);
+        return origDarurat.call(this);
+      };
+    }
+
+    // --- Adzan ---
+    const origAdzan = window.sheetAdzan;
+    if (origAdzan) {
+      window.sheetAdzan = function() {
+        S.adzanOn(); flash(700);
+        return origAdzan.call(this);
+      };
+    }
+
+    // --- Numpad ---
+    const origNumKey = window.numKey;
+    if (origNumKey) {
+      window.numKey = function(v) {
+        S.numKey();
+        return origNumKey.call(this, v);
+      };
+    }
+
+    const origNumDel = window.numDel;
+    if (origNumDel) {
+      window.numDel = function() {
+        S.numDel();
+        return origNumDel.call(this);
+      };
+    }
+
+    const origNumApply = window.numApply;
+    if (origNumApply) {
+      window.numApply = function() {
+        S.numApply(); flash(600);
+        return origNumApply.call(this);
+      };
+    }
+
+    // --- Manual time apply ---
+    const origManual = window.applyManualTime;
+    if (origManual) {
+      window.applyManualTime = function() {
+        S.manualApply(); flash(600);
+        return origManual.call(this);
+      };
+    }
+
+    // --- Custom time ---
+    const origCustom = window.applyCustomTime;
+    if (origCustom) {
+      window.applyCustomTime = function() {
+        S.manualApply(); flash(600);
+        return origCustom.call(this);
+      };
+    }
+
+    // --- Quick Reset All ---
+    const origResetAll = window.quickResetAll;
+    if (origResetAll) {
+      window.quickResetAll = function() {
+        S.resetAll(); flash(700);
+        return origResetAll.call(this);
+      };
+    }
+
+    // --- Quick Off All ---
+    const origOffAll = window.quickOffAll;
+    if (origOffAll) {
+      window.quickOffAll = function() {
+        S.offAll(); flash(700);
+        return origOffAll.call(this);
+      };
+    }
+
+    // --- Pesan ---
+    const origSendPesan = window.sendPesanToPS;
+    if (origSendPesan) {
+      window.sendPesanToPS = function(n, msg) {
+        S.pesanSent(); flash(400);
+        return origSendPesan.call(this, n, msg);
+      };
+    }
+
+    const origGlobalMsg = window.sendGlobalMsg;
+    if (origGlobalMsg) {
+      window.sendGlobalMsg = function(msg) {
+        S.pesanSent(); flash(400);
+        return origGlobalMsg.call(this, msg);
+      };
+    }
+
+    // --- Tab switch ---
+    const origSwitchTab = window.switchTab;
+    if (origSwitchTab) {
+      window.switchTab = function(name) {
+        S.tabSwitch();
+        return origSwitchTab.call(this, name);
+      };
+    }
+
+    // --- showToast — detect error ---
+    const origToast = window.showToast;
+    if (origToast) {
+      window.showToast = function(msg) {
+        if (typeof msg === 'string' && msg.startsWith('❌')) S.error();
+        return origToast.call(this, msg);
+      };
+    }
+
+    // --- Price buttons in sheet (delegated) ---
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('.price-btn');
+      if (btn) { BH_SOUND.unlock(); }
+    }, { passive: true });
+
+    // --- Tab buttons ---
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('touchstart', () => {
+        BH_SOUND.unlock();
+        S.tabSwitch();
+      }, { passive: true });
+    });
+
+    // --- Action buttons & quick buttons ---
+    document.addEventListener('touchstart', e => {
+      const btn = e.target.closest('.action-btn, .quick-btn, .pesan-tmpl-btn');
+      if (btn) { S.click(); }
+    }, { passive: true });
+  };
+
+  // Patch after a brief delay to ensure all scripts loaded
+  setTimeout(patch, 100);
+})();
+
+// ══════════════════════════════════════════════
+//  PWA — Service Worker + Install Banner
+// ══════════════════════════════════════════════
+(function initPWA() {
+  // Register SW
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('[SW] Registered:', reg.scope))
+        .catch(err => console.warn('[SW] Failed:', err));
+    });
+  }
+
+  // Install banner
+  let deferredPrompt = null;
+  const banner = document.getElementById('pwaBanner');
+  const installBtn = document.getElementById('pwaInstallBtn');
+  const dismissBtn = document.getElementById('pwaDismissBtn');
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(() => banner && banner.classList.add('show'), 2500);
+  });
+
+  if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      BH_SOUND.sounds.addTime();
+      banner.classList.remove('show');
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') window.showToast && window.showToast('✅ BigHero PS berhasil diinstall!');
+      deferredPrompt = null;
+    });
+  }
+
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', () => {
+      banner.classList.remove('show');
+      deferredPrompt = null;
+    });
+  }
+
+  // Already installed — hide banner
+  window.addEventListener('appinstalled', () => {
+    banner && banner.classList.remove('show');
+    window.showToast && window.showToast('✅ App terinstall!');
+  });
+})();
+</script>
+</body>
+</html>
